@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-color="blossom">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mali&amp;Asha Diary 📖</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ff6b9d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mali&amp;Asha Diary" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Fredoka+One&family=Patrick+Hand&family=Indie+Flower&family=Shadows+Into+Light&family=Architects+Daughter&family=Schoolbell&family=Gochi+Hand&display=swap" rel="stylesheet" />
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* iOS does not inherit font-family into form elements by default */
+input, textarea, select { font-family: inherit; }
+
+/* ── Base tokens ── */
+:root {
+  --p1: #ff6b9d; --p2: #c77dff;
+  --blue: #72b7ff; --green: #6bdaa8; --yellow: #ffe066; --orange: #ffb347;
+  --bg: #fff8f0; --card: #ffffff; --card2: #fffbf5;
+  --text: #3a2a4d; --muted: #9b89b5; --border: #ffe8f5;
+  --mood-bg: #f3eeff; --cal-today: #ffe8f5; --cal-hover: #ede7ff;
+  --fs: 20px;
+  --radius: 20px; --nav-h: 70px; --hdr-h: 60px;
+}
+
+/* ── Colour themes ── */
+[data-color="sky"]        { --p1:#4da6ff; --p2:#38d9d9; }
+[data-color="forest"]     { --p1:#4ecdc4; --p2:#85cc5e; }
+[data-color="sunshine"]   { --p1:#ff9f43; --p2:#ffd23f; }
+[data-color="grape"]      { --p1:#b57bee; --p2:#7c6fff; }
+[data-color="strawberry"] { --p1:#ff4757; --p2:#ff6b9d; }
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --bg:#1a1625; --card:#241e35; --card2:#2f2845;
+  --text:#f0e8ff; --muted:#8b7da8; --border:#3a2a4d;
+  --mood-bg:#2f2845; --cal-today:#3a1e35; --cal-hover:#2f2845;
+  color-scheme: dark;
+}
+[data-theme="dark"] .today-card  { background: linear-gradient(135deg,#3a1e35,#2a1e45) !important; }
+[data-theme="dark"] .photo-label { background: linear-gradient(135deg,#3a1e35,#2a1e45) !important; }
+[data-theme="dark"] .prompt-chip { background: #2f2845 !important; border-color: var(--p2) !important; }
+[data-theme="dark"] .streak-badge { background: #2a2010 !important; border-color: #cc7722 !important; color: #ffb347 !important; }
+[data-theme="dark"] .tts-btn     { background: var(--card2); }
+[data-theme="dark"] .toast       { background: #f0e8ff; color: #1a1625; }
+
+/* ── Smooth transitions ── */
+html { transition: background .3s; }
+body, .app-header, .bottom-nav, .entry-card, .today-card, .detail-text,
+.diary-textarea, .search-input, .cal-arrow, .mood-btn,
+.settings-sheet, .photo-label, .prompt-chip { transition: background .3s, color .3s, border-color .3s; }
+
+/* ── Base ── */
+html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--text);
+             font-family:var(--font-main,'Caveat',cursive); font-size:var(--fs); }
+
+/* ── Header ── */
+.app-header { position:fixed; top:0; left:0; right:0; height:var(--hdr-h);
+              display:flex; align-items:center; justify-content:space-between;
+              padding:0 16px; background:linear-gradient(135deg,var(--p1),var(--p2));
+              z-index:100; box-shadow:0 3px 12px rgba(0,0,0,.2); }
+.app-title  { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#fff;
+              letter-spacing:.5px; text-align:center; flex:1; }
+.hdr-btn    { background:rgba(255,255,255,.25); border:none; border-radius:50%;
+              width:36px; height:36px; font-size:1.2rem; cursor:pointer; color:#fff;
+              display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* ── Page transitions ── */
+@keyframes slideInRight { from{opacity:0;transform:translateX(48px)} to{opacity:1;transform:translateX(0)} }
+@keyframes slideInLeft  { from{opacity:0;transform:translateX(-48px)} to{opacity:1;transform:translateX(0)} }
+.page { display:none; position:fixed; top:var(--hdr-h); left:0; right:0; bottom:var(--nav-h);
+        overflow-y:auto; padding:16px 16px 28px; -webkit-overflow-scrolling:touch; background:var(--bg); }
+.page.active           { display:block; }
+.page.slide-in-right   { animation:slideInRight .25s cubic-bezier(.25,.46,.45,.94); }
+.page.slide-in-left    { animation:slideInLeft  .25s cubic-bezier(.25,.46,.45,.94); }
+
+/* ── Bottom Nav ── */
+.bottom-nav { position:fixed; bottom:0; left:0; right:0; height:var(--nav-h);
+              display:flex; background:var(--card); border-top:2px solid var(--border); z-index:100; }
+.nav-btn    { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+              gap:2px; background:none; border:none; cursor:pointer;
+              font-family:'Fredoka One',cursive; font-size:.7rem; color:var(--muted); transition:color .2s; }
+.nav-btn > span:first-child { font-size:1.5rem; }
+.nav-btn.active { color:var(--p1); }
+.nav-plus       { font-size:2.2rem !important; color:var(--p2); line-height:1; }
+
+/* ── HOME ── */
+.home-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.home-greeting { font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--p2); }
+
+.streak-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 16px;
+                background:linear-gradient(135deg,#fff3cd,#ffe0b2); border:2px solid #ffb347;
+                border-radius:50px; font-family:'Fredoka One',cursive; font-size:1rem; color:#c65e00; }
+.streak-zero  { color:var(--muted); font-size:.85rem; margin-bottom:14px; font-family:'Fredoka One',cursive; }
+
+.today-card   { display:flex; align-items:center; gap:14px;
+                background:linear-gradient(135deg,#ffecf8,#ede7ff); border-radius:var(--radius);
+                padding:18px; margin-bottom:22px; cursor:pointer;
+                box-shadow:0 4px 16px rgba(0,0,0,.1); transition:transform .15s; }
+.today-card:active    { transform:scale(.97); }
+.today-card-icon      { font-size:2.5rem; }
+.today-card-title     { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--p1); }
+.today-card-sub       { font-size:.9rem; color:var(--muted); }
+.today-card-arrow     { font-size:2rem; color:var(--p2); margin-left:auto; }
+.section-heading      { font-family:'Fredoka One',cursive; font-size:1.15rem; color:var(--p2); margin-bottom:10px; }
+
+/* ── Entry Cards ── */
+.entries-list { display:flex; flex-direction:column; gap:12px; }
+.entry-card   { background:var(--card); border-radius:var(--radius); padding:14px 16px;
+                border-left:5px solid var(--p1); box-shadow:0 2px 10px rgba(0,0,0,.06);
+                cursor:pointer; transition:transform .15s; position:relative; }
+.entry-card:active            { transform:scale(.98); }
+.entry-card:nth-child(2n)     { border-left-color:var(--p2); }
+.entry-card:nth-child(3n)     { border-left-color:var(--blue); }
+.entry-card:nth-child(4n)     { border-left-color:var(--green); }
+.entry-card:nth-child(5n)     { border-left-color:var(--orange); }
+.entry-card-header  { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.entry-card-mood    { font-size:1.4rem; }
+.entry-card-date    { font-size:.8rem; color:var(--muted); font-family:'Fredoka One',cursive; }
+.entry-card-preview { font-size:1rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.entry-card-has-photo { position:absolute; right:14px; top:14px; font-size:1rem; }
+
+/* ── New Entry ── */
+.entry-date-label { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--muted);
+                    margin-bottom:12px; text-align:center; }
+.mood-row    { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.mood-label  { color:var(--p2); font-size:1rem; }
+.mood-options { display:flex; gap:10px; flex-wrap:wrap; }
+.mood-btn    { font-size:1.8rem; background:var(--mood-bg); border:3px solid transparent;
+               border-radius:50%; width:52px; height:52px; cursor:pointer;
+               transition:transform .15s, border-color .15s; }
+.mood-btn.selected { border-color:var(--p2); transform:scale(1.15); }
+.mood-btn:active   { transform:scale(.9); }
+
+.voice-area { display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:14px; }
+.diary-textarea { width:100%; font-family:var(--font-main,'Caveat',cursive); font-size:1.15em; color:var(--text);
+                  background:var(--card2); border:2px dashed var(--p1); border-radius:var(--radius);
+                  padding:14px; resize:none; outline:none; line-height:1.7; min-height:150px; }
+.diary-textarea:focus { border-color:var(--p2); background:var(--card); }
+
+/* ── Mic button + ring animation ── */
+.mic-btn { position:relative; display:flex; flex-direction:column; align-items:center; gap:6px;
+           background:linear-gradient(135deg,var(--p1),var(--p2)); border:none; border-radius:50px;
+           padding:16px 40px; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,.2);
+           transition:transform .15s; overflow:visible; }
+.mic-btn:active { transform:scale(.94); }
+.mic-btn.recording { background:linear-gradient(135deg,#ff4757,#ff6b9d); }
+.mic-btn.recording::before,
+.mic-btn.recording::after {
+  content:''; position:absolute; inset:-8px; border-radius:58px;
+  border:3px solid var(--p1); pointer-events:none;
+  animation:mic-ring 1.4s ease-out infinite;
+}
+.mic-btn.recording::after { inset:-18px; border-radius:68px; animation-delay:.4s; border-width:2px; }
+@keyframes mic-ring { 0%{opacity:.7;transform:scale(1)} 100%{opacity:0;transform:scale(1.1)} }
+.mic-icon  { font-size:2rem; }
+.mic-label { font-family:'Fredoka One',cursive; font-size:.9rem; color:#fff; letter-spacing:.5px; }
+
+.recording-indicator { display:flex; align-items:center; gap:8px;
+                        color:#ff4757; font-family:'Fredoka One',cursive; font-size:1rem; }
+.pulse-dot { width:12px; height:12px; background:#ff4757; border-radius:50%;
+             animation:pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
+
+/* ── Writing prompts ── */
+.prompts-section { margin-bottom:16px; }
+.prompts-header  { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.prompts-label   { font-family:'Fredoka One',cursive; font-size:.95rem; color:var(--muted); }
+.prompts-shuffle { background:none; border:none; cursor:pointer; font-size:1rem;
+                   color:var(--p2); font-family:'Fredoka One',cursive; padding:4px 8px; }
+.prompts-chips   { display:flex; flex-direction:column; gap:8px; }
+.prompt-chip     { background:linear-gradient(135deg,#fff0fa,#f0e8ff); border:1.5px solid var(--p1);
+                   border-radius:14px; padding:10px 14px; cursor:pointer; text-align:left;
+                   font-family:var(--font-main,'Caveat',cursive); font-size:.95em; color:var(--text);
+                   transition:transform .1s; line-height:1.3; }
+.prompt-chip:active { transform:scale(.98); }
+
+/* ── Photo ── */
+.photo-section { margin-bottom:20px; }
+.photo-label   { display:inline-block; background:linear-gradient(135deg,#ffe8f5,#ede7ff);
+                 border:2px dashed var(--p2); border-radius:14px; padding:12px 22px;
+                 cursor:pointer; font-size:1rem; color:var(--p2); }
+#photoInput { display:none; }
+.photo-preview { margin-top:10px; }
+.photo-preview img { max-width:100%; border-radius:var(--radius); border:3px solid var(--p1); }
+
+.save-btn { width:100%; background:linear-gradient(135deg,var(--green),var(--blue)); border:none;
+            border-radius:50px; padding:16px; font-family:'Fredoka One',cursive;
+            font-size:1.2rem; color:#fff; cursor:pointer; box-shadow:0 6px 18px rgba(107,218,168,.4);
+            transition:transform .15s; }
+.save-btn:active { transform:scale(.97); }
+
+/* ── Entry Detail ── */
+.detail-mood  { font-size:3rem; text-align:center; margin-bottom:6px; }
+.detail-date  { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--muted);
+                text-align:center; margin-bottom:18px; }
+.detail-text  { font-size:1.25em; line-height:1.8; color:var(--text); white-space:pre-wrap;
+                background:var(--card2); border-left:5px solid var(--p1);
+                border-radius:0 var(--radius) var(--radius) 0; padding:16px; margin-bottom:16px; min-height:80px; }
+.detail-photo-wrap img { max-width:100%; border-radius:var(--radius); border:3px solid var(--p2); }
+
+.detail-actions { display:flex; gap:10px; margin-top:20px; }
+.tts-btn    { flex:1; background:var(--card2); border:2px solid var(--p2); border-radius:50px;
+              padding:12px; font-family:'Fredoka One',cursive; font-size:1rem; color:var(--p2);
+              cursor:pointer; transition:background .2s; }
+.tts-btn.speaking { background:var(--p2); color:#fff; border-color:var(--p2); }
+.edit-entry-btn { flex:1; background:none; border:2px solid var(--p2); border-radius:50px;
+                  padding:12px; font-family:'Fredoka One',cursive; font-size:1rem;
+                  color:var(--p2); cursor:pointer; transition:background .2s; }
+.edit-entry-btn:active { background:var(--mood-bg); }
+.delete-btn { flex:1; background:none; border:2px solid #ffccd5; border-radius:50px;
+              padding:12px; font-family:'Fredoka One',cursive; font-size:1rem;
+              color:#ff4757; cursor:pointer; }
+.delete-btn:active { background:#fff0f3; }
+.delete-btn.confirming { background:#ff4757 !important; color:#fff !important; border-color:#ff4757 !important; }
+
+/* ── Calendar ── */
+.cal-nav        { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.cal-arrow      { background:var(--mood-bg); border:none; border-radius:50%; width:40px; height:40px;
+                  font-size:1.5rem; cursor:pointer; color:var(--p2); }
+.cal-month-label { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--p2); }
+.cal-grid       { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:18px; }
+.cal-day-name   { text-align:center; font-family:'Fredoka One',cursive; font-size:.75rem;
+                  color:var(--muted); padding:4px 0; }
+.cal-day        { aspect-ratio:1; display:flex; flex-direction:column; align-items:center;
+                  justify-content:center; border-radius:50%; font-size:.95rem; cursor:pointer;
+                  position:relative; transition:background .15s; }
+.cal-day.empty  { cursor:default; }
+.cal-day.today  { background:var(--cal-today); font-weight:700; color:var(--p1); }
+.cal-day.has-entry::after { content:''; position:absolute; bottom:3px; width:6px; height:6px;
+                             border-radius:50%; background:var(--p2); }
+.cal-day.selected          { background:var(--p2); color:#fff; }
+.cal-day.selected::after   { background:#fff; }
+.cal-day:not(.empty):active { background:var(--cal-hover); }
+
+/* ── Search ── */
+.search-box-wrap { margin-bottom:16px; }
+.search-input    { width:100%; font-family:var(--font-main,'Caveat',cursive); font-size:1.15em; padding:12px 16px;
+                   border:2px solid var(--p2); border-radius:50px; outline:none;
+                   background:var(--card); color:var(--text); }
+.search-input::placeholder { color:var(--muted); }
+.search-highlight { background:#ffe066; border-radius:3px; color:#3a2a4d; }
+
+/* ── Settings sheet ── */
+.settings-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45);
+                     z-index:300; backdrop-filter:blur(3px); }
+.settings-sheet   { position:fixed; bottom:0; left:0; right:0; background:var(--card);
+                     border-radius:28px 28px 0 0; padding:12px 24px 48px; z-index:301;
+                     box-shadow:0 -8px 32px rgba(0,0,0,.25); max-height:90vh; overflow-y:auto; }
+.settings-handle  { width:40px; height:5px; background:var(--muted); border-radius:3px;
+                    margin:0 auto 18px; opacity:.4; }
+.settings-title   { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--p1);
+                    margin-bottom:4px; text-align:center; }
+.settings-row     { display:flex; align-items:center; justify-content:space-between;
+                    padding:14px 0; border-bottom:1px solid rgba(128,128,128,.15); }
+.settings-label   { font-size:1rem; color:var(--text); }
+.settings-section { margin-top:20px; }
+.settings-section-title { font-family:'Fredoka One',cursive; font-size:.82rem; color:var(--muted);
+                           margin-bottom:14px; letter-spacing:.8px; text-transform:uppercase; }
+.settings-sub-row { display:flex; align-items:center; justify-content:space-between;
+                    padding:8px 0 14px; border-bottom:1px solid rgba(128,128,128,.15); }
+.settings-sub-label { font-size:.9rem; color:var(--muted); }
+
+/* Toggle */
+.toggle-switch { position:relative; display:inline-block; width:52px; height:28px; }
+.toggle-switch input { display:none; }
+.toggle-track  { position:absolute; inset:0; background:#ccc; border-radius:14px;
+                 transition:background .25s; cursor:pointer; }
+.toggle-track::after { content:''; position:absolute; top:3px; left:3px; width:22px; height:22px;
+                        background:#fff; border-radius:50%; transition:transform .25s;
+                        box-shadow:0 1px 4px rgba(0,0,0,.25); }
+.toggle-switch input:checked + .toggle-track             { background:var(--p1); }
+.toggle-switch input:checked + .toggle-track::after      { transform:translateX(24px); }
+
+/* Colour swatches */
+.color-swatches { display:flex; gap:12px; flex-wrap:wrap; }
+.swatch-wrap    { display:flex; flex-direction:column; align-items:center; }
+.swatch         { width:48px; height:48px; border-radius:50%; border:3px solid transparent;
+                  cursor:pointer; transition:transform .15s, border-color .15s;
+                  box-shadow:0 2px 10px rgba(0,0,0,.18); }
+.swatch.selected { border-color:var(--text); transform:scale(1.18); }
+.swatch:active  { transform:scale(.9); }
+.swatch-label   { font-size:.65rem; color:var(--muted); font-family:'Fredoka One',cursive; margin-top:4px; }
+
+/* Font size buttons */
+.fs-btns     { display:flex; gap:6px; }
+.fs-btn      { background:var(--card2); border:2px solid var(--border); border-radius:10px;
+               padding:6px 12px; cursor:pointer; color:var(--muted);
+               font-family:'Fredoka One',cursive; transition:border-color .2s, color .2s; }
+.fs-btn.active { border-color:var(--p1); color:var(--p1); }
+.fs-btn:nth-child(1) { font-size:.8rem; }
+.fs-btn:nth-child(2) { font-size:1rem; }
+.fs-btn:nth-child(3) { font-size:1.3rem; }
+
+/* Time input */
+.time-input { font-family:'Fredoka One',cursive; font-size:.95rem; padding:6px 10px;
+              border:2px solid var(--p2); border-radius:10px; background:var(--card);
+              color:var(--text); outline:none; }
+
+/* Lang select */
+.lang-select { font-family:'Fredoka One',cursive; font-size:.9rem; padding:6px 10px;
+               border:2px solid var(--p2); border-radius:10px; background:var(--card);
+               color:var(--text); outline:none; max-width:160px; }
+
+/* Export button */
+.export-btn { width:100%; background:linear-gradient(135deg,var(--p1),var(--p2)); border:none;
+              border-radius:50px; padding:14px; font-family:'Fredoka One',cursive;
+              font-size:1rem; color:#fff; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.15);
+              transition:transform .15s; }
+.export-btn:active { transform:scale(.97); }
+
+/* ── Font Picker ── */
+.font-options { display:flex; flex-direction:column; gap:10px; }
+.font-opt     { display:flex; align-items:center; justify-content:space-between;
+                background:var(--card2); border:2px solid var(--border); border-radius:14px;
+                padding:12px 16px; cursor:pointer; transition:border-color .2s, background .2s; }
+.font-opt.selected { border-color:var(--p1); background:var(--bg); }
+.font-opt:active   { transform:scale(.98); }
+.font-opt-name     { font-size:1.25rem; color:var(--text); }
+.font-opt-tick     { font-size:1.1rem; opacity:0; transition:opacity .2s; }
+.font-opt.selected .font-opt-tick { opacity:1; color:var(--p1); }
+
+/* ── To-Do List ── */
+.todo-input-row { display:flex; gap:10px; margin-bottom:20px; align-items:center; }
+.todo-input     { flex:1; font-family:var(--font-main,'Caveat',cursive); font-size:1.1em; padding:12px 16px;
+                  border:2px solid var(--p2); border-radius:50px; outline:none;
+                  background:var(--card); color:var(--text); }
+.todo-input::placeholder { color:var(--muted); }
+.todo-mic-btn   { background:linear-gradient(135deg,var(--p1),var(--p2)); border:none;
+                  border-radius:50%; width:46px; height:46px; font-size:1.3rem; cursor:pointer;
+                  flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,.18); transition:transform .15s; }
+.todo-mic-btn:active   { transform:scale(.9); }
+.todo-mic-btn.recording { background:linear-gradient(135deg,#ff4757,#ff6b9d); }
+.todo-add-btn   { background:linear-gradient(135deg,var(--p1),var(--p2)); border:none;
+                  border-radius:50%; width:46px; height:46px; font-size:1.4rem; color:#fff;
+                  cursor:pointer; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,.18);
+                  font-family:'Fredoka One',cursive; transition:transform .15s; }
+.todo-add-btn:active { transform:scale(.9); }
+
+.todo-section-label { font-family:'Fredoka One',cursive; font-size:.85rem; color:var(--muted);
+                      letter-spacing:.8px; text-transform:uppercase; margin-bottom:10px; }
+.todo-list      { display:flex; flex-direction:column; gap:10px; margin-bottom:22px; }
+.todo-item      { display:flex; align-items:center; gap:12px; background:var(--card);
+                  border-radius:16px; padding:14px 16px; box-shadow:0 2px 8px rgba(0,0,0,.06);
+                  transition:transform .15s, opacity .2s; }
+.todo-item.done { opacity:.55; }
+.todo-item.done .todo-text { text-decoration:line-through; color:var(--muted); }
+.todo-check     { width:28px; height:28px; border-radius:50%; border:2.5px solid var(--p1);
+                  background:none; cursor:pointer; flex-shrink:0; display:flex;
+                  align-items:center; justify-content:center; font-size:1rem;
+                  transition:background .2s, border-color .2s; }
+.todo-check.checked { background:var(--p1); border-color:var(--p1); color:#fff; }
+.todo-text      { flex:1; font-size:1em; color:var(--text); line-height:1.3; }
+.todo-del       { background:none; border:none; font-size:1.2rem; cursor:pointer;
+                  opacity:.35; padding:4px; transition:opacity .2s; flex-shrink:0; }
+.todo-del:hover, .todo-del:active { opacity:.9; }
+.todo-progress-wrap { margin-bottom:18px; }
+.todo-progress-bar  { height:8px; background:var(--border); border-radius:4px; overflow:hidden; margin-top:6px; }
+.todo-progress-fill { height:100%; background:linear-gradient(90deg,var(--p1),var(--p2));
+                      border-radius:4px; transition:width .4s ease; }
+.todo-progress-label { font-family:'Fredoka One',cursive; font-size:.9rem; color:var(--muted); }
+.todo-clear-btn { background:none; border:2px solid var(--border); border-radius:50px; padding:10px 20px;
+                  font-family:'Fredoka One',cursive; font-size:.85rem; color:var(--muted);
+                  cursor:pointer; width:100%; margin-top:8px; }
+.todo-clear-btn:active { background:var(--border); }
+[data-theme="dark"] .todo-input { background:var(--card); }
+
+/* ── Confetti ── */
+.confetti-piece { position:fixed; pointer-events:none; z-index:9999; border-radius:2px; }
+
+/* ── Empty / Toast ── */
+.empty-state { color:var(--muted); text-align:center; margin-top:20px; font-size:1rem; }
+.toast { position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%; transform:translateX(-50%);
+         background:#3a2a4d; color:#fff; font-family:'Fredoka One',cursive; padding:10px 24px;
+         border-radius:50px; font-size:.95rem; z-index:400; white-space:nowrap;
+         box-shadow:0 4px 16px rgba(0,0,0,.2); }
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="app-header">
+  <button class="hdr-btn hidden" id="backBtn" onclick="goBack()">←</button>
+  <h1 class="app-title" id="pageTitle">Mali&amp;Asha Diary ✨</h1>
+  <button class="hdr-btn" id="settingsBtn" onclick="openSettings()">⚙️</button>
+</header>
+
+<!-- ══════════════ HOME ══════════════ -->
+<section class="page active" id="page-home">
+  <div class="home-top">
+    <div class="home-greeting" id="homeGreeting"></div>
+    <div id="streakBadge"></div>
+  </div>
+  <div id="streakZero" class="streak-zero hidden"></div>
+
+  <div class="today-card" onclick="showPage('new-entry')">
+    <div class="today-card-icon">🎙️</div>
+    <div>
+      <div class="today-card-title">New Entry</div>
+      <div class="today-card-sub">Tap to speak your thoughts!</div>
+    </div>
+    <div class="today-card-arrow">›</div>
+  </div>
+
+  <h2 class="section-heading">Recent Days 🌈</h2>
+  <div id="recentEntries" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ NEW ENTRY ══════════════ -->
+<section class="page" id="page-new-entry">
+  <div class="entry-date-label" id="entryDateLabel"></div>
+
+  <div class="mood-row">
+    <span class="mood-label">How are you feeling?</span>
+    <div class="mood-options">
+      <button class="mood-btn selected" data-mood="😊" onclick="selectMood(this)">😊</button>
+      <button class="mood-btn" data-mood="😢" onclick="selectMood(this)">😢</button>
+      <button class="mood-btn" data-mood="😠" onclick="selectMood(this)">😠</button>
+      <button class="mood-btn" data-mood="😴" onclick="selectMood(this)">😴</button>
+      <button class="mood-btn" data-mood="🤩" onclick="selectMood(this)">🤩</button>
+      <button class="mood-btn" data-mood="😌" onclick="selectMood(this)">😌</button>
+    </div>
+  </div>
+
+  <div class="voice-area">
+    <textarea id="entryText" class="diary-textarea"
+      placeholder="Tap the mic and start talking... or type here! 🖊️" rows="7"></textarea>
+    <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
+      <span class="mic-icon">🎙️</span>
+      <span class="mic-label" id="micLabel">Tap to Speak</span>
+    </button>
+    <div class="recording-indicator hidden" id="recordingIndicator">
+      <span class="pulse-dot"></span> Listening...
+    </div>
+  </div>
+
+  <!-- Writing prompts -->
+  <div class="prompts-section">
+    <div class="prompts-header">
+      <span class="prompts-label">💡 Need ideas?</span>
+      <button class="prompts-shuffle" onclick="shufflePrompts()">🔀 Different ideas</button>
+    </div>
+    <div class="prompts-chips" id="promptsChips"></div>
+  </div>
+
+  <div class="photo-section">
+    <label class="photo-label" for="photoInput">📷 Add a photo</label>
+    <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)" />
+    <div id="photoPreview" class="photo-preview hidden"></div>
+  </div>
+
+  <button class="save-btn" onclick="saveEntry()">Save Entry 💾</button>
+</section>
+
+<!-- ══════════════ ENTRY DETAIL ══════════════ -->
+<section class="page" id="page-entry-detail">
+  <div class="detail-mood" id="detailMood"></div>
+  <div class="detail-date" id="detailDate"></div>
+  <div class="detail-text" id="detailText"></div>
+  <div class="detail-photo-wrap" id="detailPhoto"></div>
+  <div class="detail-actions">
+    <button class="tts-btn" id="ttsBtn" onclick="toggleReadAloud()">🔊 Read Aloud</button>
+    <button class="edit-entry-btn" onclick="openEdit()">✏️ Edit</button>
+    <button class="delete-btn" id="deleteBtn" onclick="deleteCurrentEntry()">🗑️ Delete</button>
+  </div>
+</section>
+
+<!-- ══════════════ CALENDAR ══════════════ -->
+<section class="page" id="page-calendar">
+  <div class="cal-nav">
+    <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+    <span class="cal-month-label" id="calMonthLabel"></span>
+    <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div id="calDayEntries" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ SEARCH ══════════════ -->
+<section class="page" id="page-search">
+  <div class="search-box-wrap">
+    <input type="text" id="searchInput" class="search-input"
+           placeholder="🔍 Search your diary..." oninput="doSearch()" />
+  </div>
+  <div id="searchResults" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ TO-DO ══════════════ -->
+<section class="page" id="page-todo">
+  <!-- Progress bar -->
+  <div class="todo-progress-wrap">
+    <div class="todo-progress-label" id="todoProgressLabel">0 of 0 done</div>
+    <div class="todo-progress-bar"><div class="todo-progress-fill" id="todoProgressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Add task row -->
+  <div class="todo-input-row">
+    <input type="text" id="todoInput" class="todo-input"
+           placeholder="Add a task... 📝" onkeydown="if(event.key==='Enter')addTodo()" />
+    <button class="todo-mic-btn" id="todoMicBtn" onclick="toggleTodoMic()" title="Speak task">🎙️</button>
+    <button class="todo-add-btn" onclick="addTodo()">＋</button>
+  </div>
+
+  <!-- Active tasks -->
+  <div class="todo-section-label" id="todoActiveLabel">Tasks</div>
+  <div class="todo-list" id="todoActiveList"></div>
+
+  <!-- Completed tasks -->
+  <div class="todo-section-label" id="todoDoneLabel" style="display:none">Completed ✅</div>
+  <div class="todo-list" id="todoDoneList"></div>
+
+  <!-- Clear completed -->
+  <button class="todo-clear-btn" id="todoClearBtn" onclick="clearDoneTodos()" style="display:none">
+    🗑️ Clear completed
+  </button>
+</section>
+
+<!-- ── Bottom Nav ── -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-home"     onclick="showPage('home')">
+    <span>🏠</span><span>Home</span>
+  </button>
+  <button class="nav-btn" id="nav-calendar"  onclick="showPage('calendar')">
+    <span>📅</span><span>Calendar</span>
+  </button>
+  <button class="nav-btn" id="nav-new-entry" onclick="showPage('new-entry')">
+    <span class="nav-plus">＋</span><span>New</span>
+  </button>
+  <button class="nav-btn" id="nav-search"    onclick="showPage('search')">
+    <span>🔍</span><span>Search</span>
+  </button>
+  <button class="nav-btn" id="nav-todo"      onclick="showPage('todo')">
+    <span>✅</span><span>Tasks</span>
+  </button>
+</nav>
+
+<!-- ══════════════ SETTINGS SHEET ══════════════ -->
+<div class="settings-overlay hidden" id="settingsOverlay" onclick="closeSettings()"></div>
+<div class="settings-sheet hidden" id="settingsSheet">
+  <div class="settings-handle"></div>
+  <div class="settings-title">Settings 🎨</div>
+
+  <!-- Dark mode -->
+  <div class="settings-row">
+    <span class="settings-label">🌙 Dark Mode</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="darkToggle" onchange="setDarkMode(this.checked)" />
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+
+  <!-- Font size -->
+  <div class="settings-row">
+    <span class="settings-label">📝 Text Size</span>
+    <div class="fs-btns">
+      <button class="fs-btn" data-size="17" onclick="setFontSize(17)">A</button>
+      <button class="fs-btn active" data-size="20" onclick="setFontSize(20)">A</button>
+      <button class="fs-btn" data-size="25" onclick="setFontSize(25)">A</button>
+    </div>
+  </div>
+
+  <!-- Daily reminder -->
+  <div class="settings-row">
+    <span class="settings-label">🔔 Daily Reminder</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="reminderToggle" onchange="setReminder(this.checked)" />
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+  <div class="settings-sub-row" id="reminderTimeRow">
+    <span class="settings-sub-label">Remind me at</span>
+    <input type="time" id="reminderTime" value="20:00" class="time-input" onchange="saveReminderTime()" />
+  </div>
+
+  <!-- Voice language -->
+  <div class="settings-row">
+    <span class="settings-label">🗣️ Voice Language</span>
+    <select id="langSelect" class="lang-select" onchange="saveLang(this.value)">
+      <option value="en-US">English (US)</option>
+      <option value="en-GB">English (UK)</option>
+      <option value="es-ES">Español</option>
+      <option value="fr-FR">Français</option>
+      <option value="de-DE">Deutsch</option>
+      <option value="it-IT">Italiano</option>
+      <option value="pt-BR">Português</option>
+      <option value="ja-JP">日本語</option>
+      <option value="ko-KR">한국어</option>
+      <option value="zh-CN">中文</option>
+      <option value="ar-SA">العربية</option>
+      <option value="hi-IN">हिन्दी</option>
+      <option value="nl-NL">Nederlands</option>
+      <option value="ru-RU">Русский</option>
+    </select>
+  </div>
+
+  <!-- Colour theme -->
+  <div class="settings-section">
+    <div class="settings-section-title">🎨 Theme Colour</div>
+    <div class="color-swatches">
+      <div class="swatch-wrap">
+        <button class="swatch selected" data-color="blossom" onclick="setTheme('blossom')"
+          style="background:linear-gradient(135deg,#ff6b9d,#c77dff)"></button>
+        <div class="swatch-label">Blossom</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="sky" onclick="setTheme('sky')"
+          style="background:linear-gradient(135deg,#4da6ff,#38d9d9)"></button>
+        <div class="swatch-label">Sky</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="forest" onclick="setTheme('forest')"
+          style="background:linear-gradient(135deg,#4ecdc4,#85cc5e)"></button>
+        <div class="swatch-label">Forest</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="sunshine" onclick="setTheme('sunshine')"
+          style="background:linear-gradient(135deg,#ff9f43,#ffd23f)"></button>
+        <div class="swatch-label">Sunshine</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="grape" onclick="setTheme('grape')"
+          style="background:linear-gradient(135deg,#b57bee,#7c6fff)"></button>
+        <div class="swatch-label">Grape</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="strawberry" onclick="setTheme('strawberry')"
+          style="background:linear-gradient(135deg,#ff4757,#ff6b9d)"></button>
+        <div class="swatch-label">Berry</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Font picker -->
+  <div class="settings-section">
+    <div class="settings-section-title">✍️ Handwriting Style</div>
+    <div class="font-options" id="fontOptions">
+      <div class="font-opt selected" data-font="Caveat" onclick="setFont('Caveat')">
+        <span class="font-opt-name" style="font-family:'Caveat',cursive">Caveat — the classic</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Patrick Hand" onclick="setFont('Patrick Hand')">
+        <span class="font-opt-name" style="font-family:'Patrick Hand',cursive">Patrick Hand — neat &amp; friendly</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Indie Flower" onclick="setFont('Indie Flower')">
+        <span class="font-opt-name" style="font-family:'Indie Flower',cursive">Indie Flower — bubbly &amp; fun</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Shadows Into Light" onclick="setFont('Shadows Into Light')">
+        <span class="font-opt-name" style="font-family:'Shadows Into Light',cursive">Shadows Into Light — airy</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Architects Daughter" onclick="setFont('Architects Daughter')">
+        <span class="font-opt-name" style="font-family:'Architects Daughter',cursive">Architects Daughter — sketchy</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Schoolbell" onclick="setFont('Schoolbell')">
+        <span class="font-opt-name" style="font-family:'Schoolbell',cursive">Schoolbell — like a kid wrote it</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Gochi Hand" onclick="setFont('Gochi Hand')">
+        <span class="font-opt-name" style="font-family:'Gochi Hand',cursive">Gochi Hand — casual &amp; round</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export / Import -->
+  <div class="settings-section">
+    <div class="settings-section-title">💾 Backup</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="export-btn" onclick="exportDiary()">📄 Export as Text</button>
+      <button class="export-btn" style="background:linear-gradient(135deg,var(--blue),var(--p2))" onclick="exportDiaryJSON()">📦 Save JSON Backup</button>
+      <button class="export-btn" style="background:linear-gradient(135deg,var(--green),var(--blue))" onclick="document.getElementById('importInput').click()">📤 Restore from Backup</button>
+      <input type="file" id="importInput" accept=".json" style="display:none" onchange="importDiary(event)" />
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ EDIT SHEET ══════════════ -->
+<div class="settings-overlay hidden" id="editOverlay" onclick="closeEdit()"></div>
+<div class="settings-sheet hidden" id="editSheet">
+  <div class="settings-handle"></div>
+  <div class="settings-title">Edit Entry ✏️</div>
+  <div class="mood-row" style="margin-bottom:14px">
+    <span class="mood-label">How were you feeling?</span>
+    <div class="mood-options" id="editMoodOptions">
+      <button class="mood-btn selected" data-mood="😊" onclick="selectEditMood(this)">😊</button>
+      <button class="mood-btn" data-mood="😢" onclick="selectEditMood(this)">😢</button>
+      <button class="mood-btn" data-mood="😠" onclick="selectEditMood(this)">😠</button>
+      <button class="mood-btn" data-mood="😴" onclick="selectEditMood(this)">😴</button>
+      <button class="mood-btn" data-mood="🤩" onclick="selectEditMood(this)">🤩</button>
+      <button class="mood-btn" data-mood="😌" onclick="selectEditMood(this)">😌</button>
+    </div>
+  </div>
+  <textarea id="editText" class="diary-textarea" rows="7" style="margin-bottom:12px"></textarea>
+  <div class="photo-section" style="margin-bottom:16px">
+    <div id="editPhotoPreview" class="photo-preview hidden"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <label class="photo-label" for="editPhotoInput" style="font-size:.85rem;padding:8px 14px">📷 Change photo</label>
+      <input type="file" id="editPhotoInput" accept="image/*" style="display:none" onchange="handleEditPhoto(event)" />
+      <button class="delete-btn" id="removePhotoBtn" style="flex:none;padding:8px 14px;font-size:.85rem;border-radius:12px" onclick="removeEditPhoto()">✕ Remove photo</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="delete-btn" style="flex:1;margin-top:0" onclick="closeEdit()">Cancel</button>
+    <button class="save-btn" style="flex:2" onclick="saveEdit()">Save Changes 💾</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ════════════════════════════════
+   IndexedDB
+════════════════════════════════ */
+let db;
+const DB_NAME = 'VoiceDiary', STORE = 'entries';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e =>
+      e.target.result.createObjectStore(STORE, { keyPath:'id', autoIncrement:true })
+                     .createIndex('date','date',{unique:false});
+    req.onsuccess = e => { db = e.target.result; resolve(); };
+    req.onerror   = reject;
+  });
+}
+const idb = (mode) => db.transaction(STORE, mode).objectStore(STORE);
+const dbAll    = () => new Promise((r,j)=>{ const q=idb('readonly').getAll(); q.onsuccess=()=>r(q.result.reverse()); q.onerror=j; });
+const dbGet    = id => new Promise((r,j)=>{ const q=idb('readonly').get(id);  q.onsuccess=()=>r(q.result);          q.onerror=j; });
+const dbAdd    = e  => new Promise((r,j)=>{ const q=idb('readwrite').add(e);  q.onsuccess=()=>r(q.result);          q.onerror=j; });
+const dbDelete = id => new Promise((r,j)=>{ const q=idb('readwrite').delete(id); q.onsuccess=r; q.onerror=j; });
+const dbUpdate = e  => new Promise((r,j)=>{ const q=idb('readwrite').put(e);    q.onsuccess=r; q.onerror=j; });
+
+/* ════════════════════════════════
+   Helpers
+════════════════════════════════ */
+function localDateStr(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function entryLocalDate(e) { return e.localDate || e.date.slice(0,10); }
+
+/* ════════════════════════════════
+   Settings / Prefs
+════════════════════════════════ */
+function loadPrefs() {
+  const dark    = localStorage.getItem('diary-dark')    === 'true';
+  const color   = localStorage.getItem('diary-color')   || 'blossom';
+  const fs      = parseInt(localStorage.getItem('diary-fs') || '20', 10);
+  const font    = localStorage.getItem('diary-font')    || 'Caveat';
+  const remind  = localStorage.getItem('diary-reminder') === 'true';
+  const rtime   = localStorage.getItem('diary-reminder-time') || '20:00';
+
+  applyDark(dark);
+  applyColor(color);
+  applyFontSize(fs);
+  applyFont(font);
+
+  document.getElementById('darkToggle').checked     = dark;
+  document.getElementById('reminderToggle').checked = remind;
+  document.getElementById('reminderTime').value     = rtime;
+  const ls = document.getElementById('langSelect');
+  if (ls) { ls.value = getLang(); if (!ls.value) ls.value = 'en-US'; }
+
+  // sync font size buttons
+  document.querySelectorAll('.fs-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.size) === fs));
+
+  // sync swatches
+  document.querySelectorAll('.swatch').forEach(s =>
+    s.classList.toggle('selected', s.dataset.color === color));
+
+  // sync font options
+  document.querySelectorAll('.font-opt').forEach(o =>
+    o.classList.toggle('selected', o.dataset.font === font));
+}
+
+function applyDark(on)     { document.documentElement.setAttribute('data-theme', on ? 'dark' : 'light'); }
+function applyColor(c)     { document.documentElement.setAttribute('data-color', c); }
+function applyFontSize(px) { document.documentElement.style.setProperty('--fs', px + 'px'); }
+function applyFont(name) {
+  document.documentElement.style.setProperty('--font-main', `'${name}',cursive`);
+  // iOS Safari doesn't reliably re-evaluate font-family when a CSS custom property changes,
+  // so we also push the value into a dedicated <style> element.
+  let s = document.getElementById('font-override');
+  if (!s) { s = document.createElement('style'); s.id = 'font-override'; document.head.appendChild(s); }
+  s.textContent = `html,body,input,textarea,select,.diary-textarea,.search-input,.todo-input,.prompt-chip{font-family:'${name}',cursive!important}`;
+}
+
+function setDarkMode(on)  { applyDark(on);  localStorage.setItem('diary-dark', on); }
+function setFontSize(px)  {
+  applyFontSize(px);
+  localStorage.setItem('diary-fs', px);
+  document.querySelectorAll('.fs-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.size) === px));
+}
+function setTheme(name) {
+  applyColor(name);
+  localStorage.setItem('diary-color', name);
+  document.querySelectorAll('.swatch').forEach(s =>
+    s.classList.toggle('selected', s.dataset.color === name));
+}
+function setFont(name) {
+  applyFont(name);
+  localStorage.setItem('diary-font', name);
+  document.querySelectorAll('.font-opt').forEach(o =>
+    o.classList.toggle('selected', o.dataset.font === name));
+}
+function isIOSBrowser() {
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const standalone = !!window.navigator.standalone ||
+                     window.matchMedia('(display-mode: standalone)').matches;
+  return ios && !standalone;
+}
+
+async function setReminder(on) {
+  if (on) {
+    // iOS Safari browser (not PWA) silently ignores the Notification API —
+    // notifications only work after adding to Home Screen on iOS 16.4+.
+    if (isIOSBrowser()) {
+      showToast('Add to Home Screen first to enable reminders on iOS 📲');
+      document.getElementById('reminderToggle').checked = false;
+      return;
+    }
+    if (!('Notification' in window)) {
+      showToast('Notifications not supported on this browser 😢');
+      document.getElementById('reminderToggle').checked = false;
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      showToast('Allow notifications in your browser first 🔔');
+      document.getElementById('reminderToggle').checked = false;
+      return;
+    }
+  }
+  localStorage.setItem('diary-reminder', on);
+}
+function saveReminderTime() {
+  localStorage.setItem('diary-reminder-time', document.getElementById('reminderTime').value);
+  showToast('Reminder time saved! ✅');
+}
+function getLang() { return localStorage.getItem('diary-lang') || navigator.language || 'en-US'; }
+function saveLang(v) { localStorage.setItem('diary-lang', v); showToast('Language saved! 🗣️'); }
+
+function openSettings() {
+  loadPrefs();
+  document.getElementById('settingsOverlay').classList.remove('hidden');
+  document.getElementById('settingsSheet').classList.remove('hidden');
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.add('hidden');
+  document.getElementById('settingsSheet').classList.add('hidden');
+}
+
+/* ── Check reminder on load ── */
+async function checkReminder() {
+  if (localStorage.getItem('diary-reminder') !== 'true') return;
+
+  const rtime   = localStorage.getItem('diary-reminder-time') || '20:00';
+  const [rh,rm] = rtime.split(':').map(Number);
+  const now     = new Date();
+  const target  = new Date(now); target.setHours(rh, rm, 0, 0);
+  if (now < target) return;
+
+  const todayStr     = localDateStr(now);
+  const lastReminder = localStorage.getItem('diary-last-reminder');
+  if (lastReminder === todayStr) return;
+
+  const entries    = await dbAll();
+  const wroteToday = entries.some(e => entryLocalDate(e) === todayStr);
+  if (!wroteToday) {
+    localStorage.setItem('diary-last-reminder', todayStr);
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('Mali&Asha Diary 📖', {
+          body: "Don't forget to write in your diary today! 🌟",
+          icon: 'icons/icon-192.png'
+        });
+        return;
+      } catch(_) {}
+    }
+    showToast("Time to write in your diary! 🌟");
+  }
+}
+
+/* ════════════════════════════════
+   Navigation
+════════════════════════════════ */
+let navHistory  = ['home'];
+let currentPage = 'home';
+
+const PAGE_TITLES = {
+  'home':'Mali&Asha Diary ✨', 'new-entry':'New Entry 🖊️',
+  'entry-detail':'My Entry 📖', 'calendar':'Calendar 📅',
+  'search':'Search 🔍', 'todo':'My Tasks ✅',
+};
+
+const SUB_PAGES  = new Set(['new-entry', 'entry-detail']);
+const MAIN_PAGES = new Set(['home', 'calendar', 'search', 'todo']);
+
+function showPage(name, opts={}, isBack=false) {
+  stopReadAloud();
+  stopTodoMic();
+  stopRecording();
+  closeEdit();
+
+  const prev = document.querySelector('.page.active');
+  const next = document.getElementById('page-' + name);
+
+  // Skip if already on this page (re-tap of nav button)
+  if (prev === next) {
+    if (name === 'home') renderHome();
+    return;
+  }
+
+  // Swap active class — add first so there's never a blank frame
+  next.classList.add('active');
+  if (prev) prev.classList.remove('active');
+
+  // Slide animation
+  next.classList.add(isBack ? 'slide-in-left' : 'slide-in-right');
+  setTimeout(() => next.classList.remove('slide-in-right', 'slide-in-left'), 280);
+
+  // Nav highlight
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const nb = document.getElementById('nav-' + name);
+  if (nb) nb.classList.add('active');
+
+  // Back button only for genuine sub-pages; settings on all main pages
+  const isSubPage = SUB_PAGES.has(name);
+  document.getElementById('backBtn').classList.toggle('hidden', !isSubPage);
+  document.getElementById('settingsBtn').classList.toggle('hidden', isSubPage);
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[name] || 'Mali&Asha Diary ✨';
+
+  // History: main pages reset the stack; sub-pages push onto it
+  if (MAIN_PAGES.has(name)) navHistory = [name];
+  else                       navHistory.push(name);
+  currentPage = name;
+
+  if (name === 'home')         renderHome();
+  if (name === 'new-entry')    initNewEntry();
+  if (name === 'calendar')     renderCalendar();
+  if (name === 'entry-detail') renderDetail(opts.id);
+  if (name === 'todo')         renderTodos();
+  if (name === 'search') {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+    setTimeout(() => document.getElementById('searchInput').focus(), 300);
+  }
+}
+
+function goBack() {
+  navHistory.pop();
+  showPage(navHistory[navHistory.length - 1] || 'home', {}, true);
+}
+
+/* ════════════════════════════════
+   Streak
+════════════════════════════════ */
+function calcStreak(entries) {
+  if (!entries.length) return 0;
+  const dates = [...new Set(entries.map(entryLocalDate))].sort().reverse();
+  const today     = localDateStr();
+  const yesterday = localDateStr(new Date(Date.now()-864e5));
+  if (dates[0] !== today && dates[0] !== yesterday) return 0;
+  let streak = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const a = new Date(dates[i-1]), b = new Date(dates[i]);
+    if ((a - b) / 864e5 === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+/* ════════════════════════════════
+   Home
+════════════════════════════════ */
+async function renderHome() {
+  const h = new Date().getHours();
+  document.getElementById('homeGreeting').textContent =
+    h < 12 ? 'Good morning! ☀️' : h < 17 ? 'Good afternoon! 🌤️' : 'Good evening! 🌙';
+
+  const entries = await dbAll();
+  const streak  = calcStreak(entries);
+  const badge   = document.getElementById('streakBadge');
+  const zero    = document.getElementById('streakZero');
+
+  if (streak >= 2) {
+    badge.innerHTML = `<div class="streak-badge">${streak >= 7?'🔥':'⭐'} ${streak} day streak!</div>`;
+    badge.classList.remove('hidden');
+    zero.classList.add('hidden');
+  } else if (streak === 1) {
+    badge.innerHTML = `<div class="streak-badge">🌱 You wrote today!</div>`;
+    badge.classList.remove('hidden');
+    zero.classList.add('hidden');
+  } else {
+    badge.classList.add('hidden');
+    zero.textContent = 'Write today to start your streak! ✍️';
+    zero.classList.remove('hidden');
+  }
+
+  document.getElementById('recentEntries').innerHTML = entries.length
+    ? entries.slice(0,15).map(entryCard).join('')
+    : '<div class="empty-state">No entries yet — tap New to start! 🌟</div>';
+}
+
+function entryCard(e) {
+  const raw = e.text || '';
+  const preview = escapeHtml(raw.slice(0,60)) + (raw.length > 60 ? '…' : '');
+  const dateStr = new Date(e.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+  const photoIcon = e.photo ? '<span class="entry-card-has-photo">📷</span>' : '';
+  return `<div class="entry-card" onclick="showPage('entry-detail',{id:${e.id}})">
+    ${photoIcon}
+    <div class="entry-card-header">
+      <span class="entry-card-mood">${escapeHtml(e.mood||'😊')}</span>
+      <span class="entry-card-date">${dateStr}</span>
+    </div>
+    <div class="entry-card-preview">${preview||'(no text)'}</div>
+  </div>`;
+}
+
+/* ════════════════════════════════
+   Writing Prompts
+════════════════════════════════ */
+const PROMPTS = [
+  "What made you smile today? 😊",
+  "What was the best part of your day? 🌟",
+  "Did anything funny happen? 😂",
+  "What did you learn today? 🧠",
+  "Who did you spend time with? 🤝",
+  "What yummy food did you eat? 🍕",
+  "If you had a superpower today, what would it be? 🦸",
+  "What was the hardest thing you did? 💪",
+  "What are you looking forward to tomorrow? 🌈",
+  "What made you feel proud today? 🏆",
+  "Did you help someone today? 🤗",
+  "What was your favourite moment? ⭐",
+  "If today was a colour, what colour would it be? 🎨",
+  "What's something you want to remember forever? 💎",
+  "What made you feel grumpy today? 😤 (it's ok!)",
+  "What book, show or game did you enjoy? 🎮",
+  "What's a secret you can tell your diary? 🤫",
+  "What would make tomorrow even better? 🚀",
+  "Describe today in just three words! 💬",
+  "What are you thankful for today? 🙏",
+];
+
+function shufflePrompts() {
+  const pool    = [...PROMPTS].sort(() => Math.random() - .5);
+  const chips   = document.getElementById('promptsChips');
+  chips.innerHTML = pool.slice(0, 3).map(p =>
+    `<button class="prompt-chip" onclick="usePrompt(this)">${p}</button>`
+  ).join('');
+}
+
+function usePrompt(btn) {
+  const ta  = document.getElementById('entryText');
+  const txt = btn.textContent;
+  ta.value  = ta.value ? ta.value + '\n' + txt + ' ' : txt + ' ';
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+
+/* ════════════════════════════════
+   New Entry
+════════════════════════════════ */
+let selectedMood = '😊', pendingPhoto = null;
+
+function initNewEntry() {
+  document.getElementById('entryDateLabel').textContent =
+    new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('entryText').value = '';
+  document.getElementById('photoPreview').innerHTML = '';
+  document.getElementById('photoPreview').classList.add('hidden');
+  document.getElementById('photoInput').value = '';
+  document.getElementById('recordingIndicator').classList.add('hidden');
+  document.getElementById('micBtn').classList.remove('recording');
+  document.getElementById('micLabel').textContent = 'Tap to Speak';
+  pendingPhoto = null; selectedMood = '😊';
+  stopRecording();
+  document.querySelectorAll('#page-new-entry .mood-btn').forEach(b =>
+    b.classList.toggle('selected', b.dataset.mood === selectedMood));
+  shufflePrompts();
+}
+
+function selectMood(btn) {
+  btn.closest('.mood-options').querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedMood = btn.dataset.mood;
+}
+
+/* ════════════════════════════════
+   Voice Recording
+════════════════════════════════ */
+let recognition = null, isRecording = false, finalText = '';
+
+function toggleRecording() { isRecording ? stopRecording() : startRecording(); }
+
+function startRecording() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Voice not supported — try Chrome! 😢'); return; }
+  finalText   = document.getElementById('entryText').value;
+  recognition = new SR();
+  recognition.continuous = true; recognition.interimResults = true; recognition.lang = getLang();
+  recognition.onresult = event => {
+    let interim = '', newFinal = '';
+    for (let i = event.resultIndex; i < event.results.length; i++)
+      event.results[i].isFinal ? (newFinal += event.results[i][0].transcript+' ') : (interim += event.results[i][0].transcript);
+    if (newFinal) finalText += newFinal;
+    document.getElementById('entryText').value = finalText + interim;
+  };
+  recognition.onerror = e => { if (e.error!=='aborted') showToast('Mic error: '+e.error); stopRecording(); };
+  recognition.onend   = () => { if (isRecording) stopRecording(); };
+  recognition.start();
+  isRecording = true;
+  document.getElementById('micBtn').classList.add('recording');
+  document.getElementById('micLabel').textContent = 'Tap to Stop';
+  document.getElementById('recordingIndicator').classList.remove('hidden');
+}
+
+function stopRecording() {
+  if (recognition) { try { recognition.stop(); } catch(_){} recognition = null; }
+  isRecording = false;
+  document.getElementById('micBtn')?.classList.remove('recording');
+  const lbl = document.getElementById('micLabel');
+  if (lbl) lbl.textContent = 'Tap to Speak';
+  document.getElementById('recordingIndicator')?.classList.add('hidden');
+}
+
+/* ════════════════════════════════
+   Photo
+════════════════════════════════ */
+function compressImage(file, maxPx=800, quality=0.75) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onerror = () => resolve(null);
+    reader.onload = ev => {
+      const img = new Image();
+      img.onerror = () => resolve(null);
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else        { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhoto(event) {
+  const file = event.target.files[0]; if (!file) return;
+  showToast('Compressing photo… 📷');
+  const data = await compressImage(file);
+  if (!data) { showToast('Could not read image 😢'); return; }
+  pendingPhoto = data;
+  const p = document.getElementById('photoPreview');
+  p.innerHTML = `<img src="${data}" alt="photo" />`;
+  p.classList.remove('hidden');
+}
+
+/* ════════════════════════════════
+   Save + Confetti
+════════════════════════════════ */
+async function saveEntry() {
+  const text = document.getElementById('entryText').value.trim();
+  if (!text && !pendingPhoto) { showToast('Add some words or a photo first! 🖊️'); return; }
+  await dbAdd({ text, mood: selectedMood, date: new Date().toISOString(), localDate: localDateStr(), photo: pendingPhoto });
+  launchConfetti();
+  showToast('Saved! Amazing job! 🌟');
+  showPage('home');
+}
+
+function launchConfetti() {
+  const style  = getComputedStyle(document.documentElement);
+  const colors = [
+    style.getPropertyValue('--p1').trim(),
+    style.getPropertyValue('--p2').trim(),
+    style.getPropertyValue('--blue').trim(),
+    style.getPropertyValue('--green').trim(),
+    style.getPropertyValue('--yellow').trim(),
+    style.getPropertyValue('--orange').trim(),
+  ];
+  for (let i = 0; i < 90; i++) {
+    const el     = document.createElement('div');
+    const color  = colors[Math.floor(Math.random() * colors.length)];
+    const size   = 6 + Math.random() * 9;
+    const isCirc = Math.random() > .4;
+    el.className = 'confetti-piece';
+    el.style.cssText = `width:${size}px;height:${size}px;background:${color};
+      border-radius:${isCirc?'50%':'2px'};left:${10+Math.random()*80}%;top:-12px;`;
+    document.body.appendChild(el);
+    const dur   = 1100 + Math.random() * 900;
+    const drift = (Math.random() - .5) * 220;
+    const rot   = Math.random() * 720 - 360;
+    el.animate([
+      { transform:`translateY(0) translateX(0) rotate(0deg)`,     opacity: 1 },
+      { transform:`translateY(${window.innerHeight+60}px) translateX(${drift}px) rotate(${rot}deg)`, opacity: 0 }
+    ], { duration: dur, easing:'ease-in', delay: Math.random() * 500 })
+      .onfinish = () => el.remove();
+  }
+}
+
+/* ════════════════════════════════
+   Entry Detail + Read Aloud
+════════════════════════════════ */
+let currentDetailId = null, isSpeaking = false;
+
+async function renderDetail(id) {
+  if (!id) return;
+  currentDetailId = id;
+  resetDeleteBtn();
+  const e = await dbGet(id); if (!e) return;
+  document.getElementById('detailMood').textContent = e.mood || '😊';
+  const d = new Date(e.date);
+  document.getElementById('detailDate').textContent =
+    d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}) +
+    ' · ' + d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('detailText').textContent = e.text || '(no text)';
+  document.getElementById('detailPhoto').innerHTML  = e.photo ? `<img src="${e.photo}" alt="photo" />` : '';
+  stopReadAloud();
+}
+
+function toggleReadAloud() {
+  isSpeaking ? stopReadAloud() : startReadAloud();
+}
+
+function startReadAloud() {
+  if (!window.speechSynthesis) { showToast('Text-to-speech not supported 😢'); return; }
+  const text = document.getElementById('detailText').textContent;
+  if (!text || text === '(no text)') { showToast('Nothing to read! 🤷'); return; }
+  const utt  = new SpeechSynthesisUtterance(text);
+  utt.rate   = 0.9; utt.pitch = 1.1;
+  utt.onend  = stopReadAloud;
+  utt.onerror = stopReadAloud;
+  speechSynthesis.speak(utt);
+  isSpeaking = true;
+  const btn = document.getElementById('ttsBtn');
+  btn.textContent = '⏹ Stop Reading';
+  btn.classList.add('speaking');
+}
+
+function stopReadAloud() {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  isSpeaking = false;
+  const btn = document.getElementById('ttsBtn');
+  if (btn) { btn.textContent = '🔊 Read Aloud'; btn.classList.remove('speaking'); }
+}
+
+let deleteConfirmTimer = null;
+function resetDeleteBtn() {
+  clearTimeout(deleteConfirmTimer);
+  const btn = document.getElementById('deleteBtn');
+  if (btn) { btn.classList.remove('confirming'); btn.textContent = '🗑️ Delete'; }
+}
+async function deleteCurrentEntry() {
+  const btn = document.getElementById('deleteBtn');
+  if (!btn.classList.contains('confirming')) {
+    btn.classList.add('confirming');
+    btn.textContent = 'Tap again to confirm';
+    deleteConfirmTimer = setTimeout(resetDeleteBtn, 3000);
+    return;
+  }
+  resetDeleteBtn();
+  if (!currentDetailId) return;
+  await dbDelete(currentDetailId);
+  showToast('Entry deleted!');
+  goBack();
+}
+
+/* ── Edit Entry ── */
+let editMood = '😊';
+let editPhoto = null; // null = unchanged, false = remove, string = new data URI
+
+async function openEdit() {
+  if (!currentDetailId) return;
+  const e = await dbGet(currentDetailId);
+  if (!e) return;
+  editMood  = e.mood || '😊';
+  editPhoto = null;
+  document.getElementById('editText').value = e.text || '';
+  document.getElementById('editPhotoInput').value = '';
+  document.querySelectorAll('#editMoodOptions .mood-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mood === editMood);
+  });
+  const preview   = document.getElementById('editPhotoPreview');
+  const removeBtn = document.getElementById('removePhotoBtn');
+  if (e.photo) {
+    preview.innerHTML = `<img src="${e.photo}" alt="photo" />`;
+    preview.classList.remove('hidden');
+    removeBtn.style.display = '';
+  } else {
+    preview.innerHTML = '';
+    preview.classList.add('hidden');
+    removeBtn.style.display = 'none';
+  }
+  document.getElementById('editOverlay').classList.remove('hidden');
+  document.getElementById('editSheet').classList.remove('hidden');
+  document.getElementById('editText').focus();
+}
+
+function closeEdit() {
+  document.getElementById('editOverlay').classList.add('hidden');
+  document.getElementById('editSheet').classList.add('hidden');
+}
+
+function selectEditMood(btn) {
+  document.querySelectorAll('#editMoodOptions .mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  editMood = btn.dataset.mood;
+}
+
+async function handleEditPhoto(event) {
+  const file = event.target.files[0]; if (!file) return;
+  showToast('Compressing photo… 📷');
+  const data = await compressImage(file);
+  if (!data) { showToast('Could not read image 😢'); return; }
+  editPhoto  = data;
+  const preview = document.getElementById('editPhotoPreview');
+  preview.innerHTML = `<img src="${data}" alt="photo" />`;
+  preview.classList.remove('hidden');
+  document.getElementById('removePhotoBtn').style.display = '';
+}
+
+function removeEditPhoto() {
+  editPhoto = false;
+  document.getElementById('editPhotoPreview').innerHTML = '';
+  document.getElementById('editPhotoPreview').classList.add('hidden');
+  document.getElementById('removePhotoBtn').style.display = 'none';
+}
+
+async function saveEdit() {
+  const text = document.getElementById('editText').value.trim();
+  const e    = await dbGet(currentDetailId);
+  if (!e) return;
+  const resultPhoto = editPhoto === false ? null : (editPhoto || e.photo);
+  if (!text && !resultPhoto) { showToast('Add some words or a photo first! 🖊️'); return; }
+  e.text = text;
+  e.mood = editMood;
+  if (editPhoto === false) e.photo = null;
+  else if (editPhoto)      e.photo = editPhoto;
+  await dbUpdate(e);
+  closeEdit();
+  renderDetail(currentDetailId);
+  showToast('Entry updated! ✏️');
+}
+
+/* ════════════════════════════════
+   Export
+════════════════════════════════ */
+async function exportDiary() {
+  const entries = await dbAll();
+  if (!entries.length) { showToast('No entries to export yet! 📭'); return; }
+
+  const SEP  = '━'.repeat(38);
+  const date = new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  let text   = `MALI&ASHA DIARY 📖\nExported: ${date}\n${'═'.repeat(38)}\n\n`;
+
+  [...entries].reverse().forEach(e => {
+    const d = new Date(e.date);
+    text += SEP + '\n';
+    text += `📅  ${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}`;
+    text += `  ·  ${d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}\n`;
+    text += `Mood: ${e.mood || '😊'}\n\n`;
+    text += (e.text || '(no text)') + '\n\n';
+    if (e.photo) text += '[📷 Photo attached]\n\n';
+  });
+
+  const todos = loadTodos();
+  if (todos.length) {
+    text += SEP + '\nMY TASKS\n\n';
+    todos.forEach(t => { text += `${t.done ? '☑' : '☐'} ${t.text}\n`; });
+    text += '\n';
+  }
+
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `my-diary-${localDateStr()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Diary downloaded! 📥');
+}
+
+async function exportDiaryJSON() {
+  const entries = await dbAll();
+  const todos   = loadTodos();
+  if (!entries.length && !todos.length) { showToast('Nothing to export yet! 📭'); return; }
+  const payload = {
+    entries: entries.map(({ id: _id, ...rest }) => rest),
+    todos,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `my-diary-backup-${localDateStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast(`Backup saved (${entries.length} entries, ${todos.length} tasks)! 📦`);
+}
+
+async function importDiary(event) {
+  const file = event.target.files[0]; if (!file) return;
+  event.target.value = '';
+  try {
+    const raw  = await file.text();
+    const data = JSON.parse(raw);
+
+    // Support old format (bare array) and new format ({ entries, todos })
+    const incoming = Array.isArray(data) ? data : (data.entries || []);
+    const incomingTodos = Array.isArray(data) ? [] : (data.todos || []);
+
+    // Build fingerprint set from existing entries to detect duplicates
+    const existing     = await dbAll();
+    const fingerprints = new Set(existing.map(e =>
+      entryLocalDate(e) + '|' + (e.text || '').trim().slice(0, 120)
+    ));
+
+    let added = 0, skipped = 0;
+    for (const e of incoming) {
+      if (!e.date) continue;
+      const fp = (e.localDate || e.date.slice(0,10)) + '|' + (e.text || '').trim().slice(0, 120);
+      if (fingerprints.has(fp)) { skipped++; continue; }
+      const { id: _id, ...clean } = e;
+      await dbAdd(clean);
+      fingerprints.add(fp);
+      added++;
+    }
+
+    // Merge todos — skip any whose id already exists
+    if (incomingTodos.length) {
+      const existingTodos = loadTodos();
+      const existingIds   = new Set(existingTodos.map(t => t.id));
+      saveTodos([...existingTodos, ...incomingTodos.filter(t => !existingIds.has(t.id))]);
+    }
+
+    const dupMsg = skipped ? `, skipped ${skipped} duplicates` : '';
+    showToast(`Restored ${added} entries${dupMsg}! 🎉`);
+    renderHome();
+  } catch {
+    showToast('Could not read backup file 😢');
+  }
+}
+
+/* ════════════════════════════════
+   Calendar
+════════════════════════════════ */
+let calYear, calMonth;
+
+function renderCalendar() {
+  if (calYear === undefined) {
+    const n = new Date(); calYear = n.getFullYear(); calMonth = n.getMonth();
+  }
+  drawCalendar();
+}
+function changeMonth(d) {
+  calMonth += d;
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0;  calYear++; }
+  drawCalendar();
+  document.getElementById('calDayEntries').innerHTML = '';
+}
+async function drawCalendar() {
+  const entries    = await dbAll();
+  const entryDates = new Set(entries.map(entryLocalDate));
+  const MONTHS     = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent = `${MONTHS[calMonth]} ${calYear}`;
+  const todayStr  = localDateStr();
+  const firstDay  = new Date(calYear, calMonth, 1).getDay();
+  const totalDays = new Date(calYear, calMonth+1, 0).getDate();
+  let html = ['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  for (let i=0; i<firstDay; i++) html += '<div class="cal-day empty"></div>';
+  for (let d=1; d<=totalDays; d++) {
+    const ds  = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cls = ['cal-day', ds===todayStr?'today':'', entryDates.has(ds)?'has-entry':''].filter(Boolean).join(' ');
+    html += `<div class="${cls}" onclick="calDayClick(event,'${ds}')">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+async function calDayClick(ev, dateStr) {
+  document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
+  ev.currentTarget.classList.add('selected');
+  const entries    = await dbAll();
+  const dayEntries = entries.filter(e => entryLocalDate(e) === dateStr);
+  document.getElementById('calDayEntries').innerHTML = dayEntries.length
+    ? dayEntries.map(entryCard).join('')
+    : '<div class="empty-state">No entries on this day 🌿</div>';
+}
+
+/* ════════════════════════════════
+   Search
+════════════════════════════════ */
+async function doSearch() {
+  const q       = document.getElementById('searchInput').value.trim().toLowerCase();
+  const results = document.getElementById('searchResults');
+  if (!q) { results.innerHTML=''; return; }
+  const entries = await dbAll();
+  const matches = entries.filter(e => (e.text||'').toLowerCase().includes(q)||(e.mood||'').includes(q));
+  if (!matches.length) { results.innerHTML='<div class="empty-state">Nothing found 🔍</div>'; return; }
+  const safeQ = escapeHtml(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const re    = new RegExp(safeQ,'gi');
+  results.innerHTML = matches.map(e => {
+    const preview     = escapeHtml((e.text||'').slice(0,80));
+    const highlighted = preview.replace(re, m=>`<mark class="search-highlight">${m}</mark>`);
+    const dateStr     = new Date(e.date).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+    return `<div class="entry-card" onclick="showPage('entry-detail',{id:${e.id}})">
+      <div class="entry-card-header">
+        <span class="entry-card-mood">${escapeHtml(e.mood||'😊')}</span>
+        <span class="entry-card-date">${dateStr}</span>
+      </div>
+      <div class="entry-card-preview">${highlighted}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════
+   To-Do List
+════════════════════════════════ */
+function loadTodos()   { try { return JSON.parse(localStorage.getItem('diary-todos') || '[]'); } catch(_){ return []; } }
+function saveTodos(ts) { localStorage.setItem('diary-todos', JSON.stringify(ts)); }
+function uid()         { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function renderTodos() {
+  const todos  = loadTodos();
+  const active = todos.filter(t => !t.done);
+  const done   = todos.filter(t => t.done);
+
+  // Progress bar
+  const total = todos.length, doneCount = done.length;
+  document.getElementById('todoProgressLabel').textContent =
+    total ? `${doneCount} of ${total} done` : 'No tasks yet — add one below! 🌟';
+  document.getElementById('todoProgressFill').style.width =
+    total ? (doneCount / total * 100) + '%' : '0%';
+
+  // Active list
+  document.getElementById('todoActiveLabel').textContent =
+    active.length ? `Tasks (${active.length})` : 'Tasks';
+  document.getElementById('todoActiveList').innerHTML = active.length
+    ? active.map(todoItem).join('')
+    : '<div class="empty-state" style="margin-top:0;padding:12px 0">All done! 🎉</div>';
+
+  // Done list
+  const doneLabel = document.getElementById('todoDoneLabel');
+  const doneList  = document.getElementById('todoDoneList');
+  const clearBtn  = document.getElementById('todoClearBtn');
+  if (done.length) {
+    doneLabel.style.display = '';
+    doneList.innerHTML = done.map(todoItem).join('');
+    clearBtn.style.display = '';
+  } else {
+    doneLabel.style.display = 'none';
+    doneList.innerHTML = '';
+    clearBtn.style.display = 'none';
+  }
+}
+
+function todoItem(t) {
+  const checked = t.done ? 'checked' : '';
+  const doneClass = t.done ? 'done' : '';
+  return `<div class="todo-item ${doneClass}" id="todo-${t.id}">
+    <button class="todo-check ${checked}" onclick="toggleTodo('${t.id}')">${t.done ? '✓' : ''}</button>
+    <span class="todo-text">${escapeHtml(t.text)}</span>
+    <button class="todo-del" onclick="deleteTodo('${t.id}')" aria-label="Delete">✕</button>
+  </div>`;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addTodo() {
+  const input = document.getElementById('todoInput');
+  const text  = input.value.trim();
+  if (!text) { input.focus(); return; }
+  const todos = loadTodos();
+  todos.push({ id: uid(), text, done: false, createdAt: new Date().toISOString() });
+  saveTodos(todos);
+  input.value = '';
+  renderTodos();
+  stopTodoMic();
+}
+
+function toggleTodo(id) {
+  const todos = loadTodos();
+  const t = todos.find(x => x.id === id);
+  if (t) { t.done = !t.done; saveTodos(todos); renderTodos(); }
+}
+
+function deleteTodo(id) {
+  saveTodos(loadTodos().filter(t => t.id !== id));
+  renderTodos();
+}
+
+function clearDoneTodos() {
+  saveTodos(loadTodos().filter(t => !t.done));
+  renderTodos();
+}
+
+/* ── Voice input for todos ── */
+let todoRecognition = null, isTodoRecording = false;
+
+function toggleTodoMic() { isTodoRecording ? stopTodoMic() : startTodoMic(); }
+
+function startTodoMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Voice not supported — try Chrome! 😢'); return; }
+  todoRecognition = new SR();
+  todoRecognition.lang = getLang(); todoRecognition.interimResults = true;
+  todoRecognition.onresult = e => {
+    let txt = '';
+    for (let i = e.resultIndex; i < e.results.length; i++)
+      txt += e.results[i][0].transcript;
+    document.getElementById('todoInput').value = txt;
+    if (e.results[e.results.length-1].isFinal) { addTodo(); stopTodoMic(); }
+  };
+  todoRecognition.onerror = () => stopTodoMic();
+  todoRecognition.onend   = () => stopTodoMic();
+  todoRecognition.start();
+  isTodoRecording = true;
+  document.getElementById('todoMicBtn').classList.add('recording');
+}
+
+function stopTodoMic() {
+  if (todoRecognition) { try { todoRecognition.stop(); } catch(_){} todoRecognition = null; }
+  isTodoRecording = false;
+  const btn = document.getElementById('todoMicBtn');
+  if (btn) btn.classList.remove('recording');
+}
+
+/* ════════════════════════════════
+   Toast
+════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('hidden'), 2600);
+}
+
+/* ════════════════════════════════
+   Boot
+════════════════════════════════ */
+openDB()
+  .then(() => { loadPrefs(); showPage('home'); checkReminder(); })
+  .catch(err => {
+    document.body.innerHTML = `<p style="padding:20px;font-family:sans-serif">Could not open storage: ${err}</p>`;
+  });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

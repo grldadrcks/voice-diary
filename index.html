@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff6b9d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>My Voice Diary 📖</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="app-header">
+  <button class="back-btn hidden" id="backBtn" onclick="goBack()">←</button>
+  <h1 class="app-title" id="pageTitle">My Diary ✨</h1>
+  <button class="search-icon-btn" id="headerSearchBtn" onclick="showPage('search')">🔍</button>
+</header>
+
+<!-- ══════════════ HOME PAGE ══════════════ -->
+<section class="page active" id="page-home">
+  <div class="home-greeting" id="homeGreeting"></div>
+  <div class="today-card" onclick="showPage('new-entry')">
+    <div class="today-card-icon">🎙️</div>
+    <div class="today-card-text">
+      <div class="today-card-title">New Entry</div>
+      <div class="today-card-sub">Tap to speak your thoughts!</div>
+    </div>
+    <div class="today-card-arrow">›</div>
+  </div>
+
+  <h2 class="section-heading">Recent Days 🌈</h2>
+  <div id="recentEntries" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ NEW ENTRY PAGE ══════════════ -->
+<section class="page" id="page-new-entry">
+  <div class="entry-date-label" id="entryDateLabel"></div>
+
+  <!-- Mood picker -->
+  <div class="mood-row">
+    <span class="mood-label">How are you feeling? </span>
+    <div class="mood-options" id="moodOptions">
+      <button class="mood-btn selected" data-mood="😊" onclick="selectMood(this)">😊</button>
+      <button class="mood-btn" data-mood="😢" onclick="selectMood(this)">😢</button>
+      <button class="mood-btn" data-mood="😠" onclick="selectMood(this)">😠</button>
+      <button class="mood-btn" data-mood="😴" onclick="selectMood(this)">😴</button>
+      <button class="mood-btn" data-mood="🤩" onclick="selectMood(this)">🤩</button>
+      <button class="mood-btn" data-mood="😌" onclick="selectMood(this)">😌</button>
+    </div>
+  </div>
+
+  <!-- Voice area -->
+  <div class="voice-area">
+    <textarea
+      id="entryText"
+      class="diary-textarea"
+      placeholder="Tap the mic and start talking... or type here! 🖊️"
+      rows="8"
+    ></textarea>
+
+    <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
+      <span class="mic-icon">🎙️</span>
+      <span class="mic-label" id="micLabel">Hold to Speak</span>
+    </button>
+    <div class="recording-indicator hidden" id="recordingIndicator">
+      <span class="pulse-dot"></span> Listening...
+    </div>
+  </div>
+
+  <!-- Photo -->
+  <div class="photo-section">
+    <label class="photo-label" for="photoInput">📷 Add a photo</label>
+    <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhoto(event)" />
+    <div id="photoPreview" class="photo-preview hidden"></div>
+  </div>
+
+  <!-- Save -->
+  <button class="save-btn" onclick="saveEntry()">Save Entry 💾</button>
+</section>
+
+<!-- ══════════════ ENTRY DETAIL PAGE ══════════════ -->
+<section class="page" id="page-entry-detail">
+  <div class="detail-mood" id="detailMood"></div>
+  <div class="detail-date" id="detailDate"></div>
+  <div class="detail-text" id="detailText"></div>
+  <div class="detail-photo-wrap" id="detailPhoto"></div>
+  <button class="delete-btn" id="deleteBtn" onclick="deleteCurrentEntry()">🗑️ Delete Entry</button>
+</section>
+
+<!-- ══════════════ CALENDAR PAGE ══════════════ -->
+<section class="page" id="page-calendar">
+  <div class="cal-nav">
+    <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+    <span class="cal-month-label" id="calMonthLabel"></span>
+    <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div id="calDayEntries" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ SEARCH PAGE ══════════════ -->
+<section class="page" id="page-search">
+  <div class="search-box-wrap">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search your diary..." oninput="doSearch()" />
+  </div>
+  <div id="searchResults" class="entries-list"></div>
+</section>
+
+<!-- ── Bottom Nav ── -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-home" onclick="showPage('home')">
+    <span>🏠</span><span>Home</span>
+  </button>
+  <button class="nav-btn" id="nav-calendar" onclick="showPage('calendar')">
+    <span>📅</span><span>Calendar</span>
+  </button>
+  <button class="nav-btn" id="nav-new-entry" onclick="showPage('new-entry')">
+    <span class="nav-plus">＋</span><span>New</span>
+  </button>
+  <button class="nav-btn" id="nav-search" onclick="showPage('search')">
+    <span>🔍</span><span>Search</span>
+  </button>
+</nav>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

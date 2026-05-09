@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-color="blossom">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mali&amp;Asha Diary 📖</title>
+  <meta name="theme-color" content="#ff6b9d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mali&amp;Asha Diary" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Fredoka+One&family=Patrick+Hand&family=Indie+Flower&family=Shadows+Into+Light&family=Architects+Daughter&family=Schoolbell&family=Gochi+Hand&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="app-header">
+  <button class="hdr-btn hidden" id="backBtn" onclick="goBack()">←</button>
+  <h1 class="app-title" id="pageTitle">Mali&amp;Asha Diary ✨</h1>
+  <button class="hdr-btn" id="settingsBtn" onclick="openSettings()">⚙️</button>
+</header>
+
+<!-- ══════════════ HOME ══════════════ -->
+<section class="page active" id="page-home">
+  <div class="home-top">
+    <div class="home-greeting" id="homeGreeting"></div>
+    <div id="streakBadge"></div>
+  </div>
+  <div id="streakZero" class="streak-zero hidden"></div>
+
+  <div class="today-card" onclick="showPage('new-entry')">
+    <div class="today-card-icon">🎙️</div>
+    <div>
+      <div class="today-card-title">New Entry</div>
+      <div class="today-card-sub">Tap to speak your thoughts!</div>
+    </div>
+    <div class="today-card-arrow">›</div>
+  </div>
+
+  <h2 class="section-heading">Recent Days 🌈</h2>
+  <div id="recentEntries" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ NEW ENTRY ══════════════ -->
+<section class="page" id="page-new-entry">
+  <div class="entry-date-label" id="entryDateLabel"></div>
+
+  <div class="mood-row">
+    <span class="mood-label">How are you feeling?</span>
+    <div class="mood-options">
+      <button class="mood-btn selected" data-mood="😊" onclick="selectMood(this)">😊</button>
+      <button class="mood-btn" data-mood="😢" onclick="selectMood(this)">😢</button>
+      <button class="mood-btn" data-mood="😠" onclick="selectMood(this)">😠</button>
+      <button class="mood-btn" data-mood="😴" onclick="selectMood(this)">😴</button>
+      <button class="mood-btn" data-mood="🤩" onclick="selectMood(this)">🤩</button>
+      <button class="mood-btn" data-mood="😌" onclick="selectMood(this)">😌</button>
+    </div>
+  </div>
+
+  <div class="voice-area">
+    <textarea id="entryText" class="diary-textarea"
+      placeholder="Tap the mic and start talking... or type here! 🖊️" rows="7"></textarea>
+    <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
+      <span class="mic-icon">🎙️</span>
+      <span class="mic-label" id="micLabel">Tap to Speak</span>
+    </button>
+    <div class="recording-indicator hidden" id="recordingIndicator">
+      <span class="pulse-dot"></span> Listening...
+    </div>
+  </div>
+
+  <!-- Writing prompts -->
+  <div class="prompts-section">
+    <div class="prompts-header">
+      <span class="prompts-label">💡 Need ideas?</span>
+      <button class="prompts-shuffle" onclick="shufflePrompts()">🔀 Different ideas</button>
+    </div>
+    <div class="prompts-chips" id="promptsChips"></div>
+  </div>
+
+  <div class="photo-section">
+    <label class="photo-label" for="photoInput">📷 Add a photo</label>
+    <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)" />
+    <div id="photoPreview" class="photo-preview hidden"></div>
+  </div>
+
+  <button class="save-btn" onclick="saveEntry()">Save Entry 💾</button>
+</section>
+
+<!-- ══════════════ ENTRY DETAIL ══════════════ -->
+<section class="page" id="page-entry-detail">
+  <div class="detail-mood" id="detailMood"></div>
+  <div class="detail-date" id="detailDate"></div>
+  <div class="detail-text" id="detailText"></div>
+  <div class="detail-photo-wrap" id="detailPhoto"></div>
+  <div class="detail-actions">
+    <button class="tts-btn" id="ttsBtn" onclick="toggleReadAloud()">🔊 Read Aloud</button>
+    <button class="edit-entry-btn" onclick="openEdit()">✏️ Edit</button>
+    <button class="delete-btn" id="deleteBtn" onclick="deleteCurrentEntry()">🗑️ Delete</button>
+  </div>
+</section>
+
+<!-- ══════════════ CALENDAR ══════════════ -->
+<section class="page" id="page-calendar">
+  <div class="cal-nav">
+    <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+    <span class="cal-month-label" id="calMonthLabel"></span>
+    <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div id="calDayEntries" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ SEARCH ══════════════ -->
+<section class="page" id="page-search">
+  <div class="search-box-wrap">
+    <input type="text" id="searchInput" class="search-input"
+           placeholder="🔍 Search your diary..." oninput="doSearch()" />
+  </div>
+  <div id="searchResults" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ TO-DO ══════════════ -->
+<section class="page" id="page-todo">
+  <div class="todo-progress-wrap">
+    <div class="todo-progress-label" id="todoProgressLabel">0 of 0 done</div>
+    <div class="todo-progress-bar"><div class="todo-progress-fill" id="todoProgressFill" style="width:0%"></div></div>
+  </div>
+  <div class="todo-input-row">
+    <input type="text" id="todoInput" class="todo-input"
+           placeholder="Add a task... 📝" onkeydown="if(event.key==='Enter')addTodo()" />
+    <button class="todo-mic-btn" id="todoMicBtn" onclick="toggleTodoMic()" title="Speak task">🎙️</button>
+    <button class="todo-add-btn" onclick="addTodo()">＋</button>
+  </div>
+  <div class="todo-section-label" id="todoActiveLabel">Tasks</div>
+  <div class="todo-list" id="todoActiveList"></div>
+  <div class="todo-section-label" id="todoDoneLabel" style="display:none">Completed ✅</div>
+  <div class="todo-list" id="todoDoneList"></div>
+  <button class="todo-clear-btn" id="todoClearBtn" onclick="clearDoneTodos()" style="display:none">
+    🗑️ Clear completed
+  </button>
+</section>
+
+<!-- ── Bottom Nav ── -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-home"     onclick="showPage('home')">
+    <span>🏠</span><span>Home</span>
+  </button>
+  <button class="nav-btn" id="nav-calendar"  onclick="showPage('calendar')">
+    <span>📅</span><span>Calendar</span>
+  </button>
+  <button class="nav-btn" id="nav-new-entry" onclick="showPage('new-entry')">
+    <span class="nav-plus">＋</span><span>New</span>
+  </button>
+  <button class="nav-btn" id="nav-search"    onclick="showPage('search')">
+    <span>🔍</span><span>Search</span>
+  </button>
+  <button class="nav-btn" id="nav-todo"      onclick="showPage('todo')">
+    <span>✅</span><span>Tasks</span>
+  </button>
+</nav>
+
+<!-- ══════════════ SETTINGS SHEET ══════════════ -->
+<div class="settings-overlay hidden" id="settingsOverlay" onclick="closeSettings()"></div>
+<div class="settings-sheet hidden" id="settingsSheet">
+  <div class="settings-handle"></div>
+  <div class="settings-title">Settings 🎨</div>
+
+  <div class="settings-row">
+    <span class="settings-label">🌙 Dark Mode</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="darkToggle" onchange="setDarkMode(this.checked)" />
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+
+  <div class="settings-row">
+    <span class="settings-label">📝 Text Size</span>
+    <div class="fs-btns">
+      <button class="fs-btn" data-size="17" onclick="setFontSize(17)">A</button>
+      <button class="fs-btn active" data-size="20" onclick="setFontSize(20)">A</button>
+      <button class="fs-btn" data-size="25" onclick="setFontSize(25)">A</button>
+    </div>
+  </div>
+
+  <div class="settings-row">
+    <span class="settings-label">🔔 Daily Reminder</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="reminderToggle" onchange="setReminder(this.checked)" />
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+  <div class="settings-sub-row" id="reminderTimeRow">
+    <span class="settings-sub-label">Remind me at</span>
+    <input type="time" id="reminderTime" value="20:00" class="time-input" onchange="saveReminderTime()" />
+  </div>
+
+  <div class="settings-row">
+    <span class="settings-label">🗣️ Voice Language</span>
+    <select id="langSelect" class="lang-select" onchange="saveLang(this.value)">
+      <option value="en-US">English (US)</option>
+      <option value="en-GB">English (UK)</option>
+      <option value="es-ES">Español</option>
+      <option value="fr-FR">Français</option>
+      <option value="de-DE">Deutsch</option>
+      <option value="it-IT">Italiano</option>
+      <option value="pt-BR">Português</option>
+      <option value="ja-JP">日本語</option>
+      <option value="ko-KR">한국어</option>
+      <option value="zh-CN">中文</option>
+      <option value="ar-SA">العربية</option>
+      <option value="hi-IN">हिन्दी</option>
+      <option value="nl-NL">Nederlands</option>
+      <option value="ru-RU">Русский</option>
+    </select>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">🎨 Theme Colour</div>
+    <div class="color-swatches">
+      <div class="swatch-wrap">
+        <button class="swatch selected" data-color="blossom" onclick="setTheme('blossom')"
+          style="background:linear-gradient(135deg,#ff6b9d,#c77dff)"></button>
+        <div class="swatch-label">Blossom</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="sky" onclick="setTheme('sky')"
+          style="background:linear-gradient(135deg,#4da6ff,#38d9d9)"></button>
+        <div class="swatch-label">Sky</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="forest" onclick="setTheme('forest')"
+          style="background:linear-gradient(135deg,#4ecdc4,#85cc5e)"></button>
+        <div class="swatch-label">Forest</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="sunshine" onclick="setTheme('sunshine')"
+          style="background:linear-gradient(135deg,#ff9f43,#ffd23f)"></button>
+        <div class="swatch-label">Sunshine</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="grape" onclick="setTheme('grape')"
+          style="background:linear-gradient(135deg,#b57bee,#7c6fff)"></button>
+        <div class="swatch-label">Grape</div>
+      </div>
+      <div class="swatch-wrap">
+        <button class="swatch" data-color="strawberry" onclick="setTheme('strawberry')"
+          style="background:linear-gradient(135deg,#ff4757,#ff6b9d)"></button>
+        <div class="swatch-label">Berry</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">✍️ Handwriting Style</div>
+    <div class="font-options" id="fontOptions">
+      <div class="font-opt selected" data-font="Caveat" onclick="setFont('Caveat')">
+        <span class="font-opt-name" style="font-family:'Caveat',cursive">Caveat — the classic</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Patrick Hand" onclick="setFont('Patrick Hand')">
+        <span class="font-opt-name" style="font-family:'Patrick Hand',cursive">Patrick Hand — neat &amp; friendly</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Indie Flower" onclick="setFont('Indie Flower')">
+        <span class="font-opt-name" style="font-family:'Indie Flower',cursive">Indie Flower — bubbly &amp; fun</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Shadows Into Light" onclick="setFont('Shadows Into Light')">
+        <span class="font-opt-name" style="font-family:'Shadows Into Light',cursive">Shadows Into Light — airy</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Architects Daughter" onclick="setFont('Architects Daughter')">
+        <span class="font-opt-name" style="font-family:'Architects Daughter',cursive">Architects Daughter — sketchy</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Schoolbell" onclick="setFont('Schoolbell')">
+        <span class="font-opt-name" style="font-family:'Schoolbell',cursive">Schoolbell — like a kid wrote it</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+      <div class="font-opt" data-font="Gochi Hand" onclick="setFont('Gochi Hand')">
+        <span class="font-opt-name" style="font-family:'Gochi Hand',cursive">Gochi Hand — casual &amp; round</span>
+        <span class="font-opt-tick">✓</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">💾 Backup</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="export-btn" onclick="exportDiary()">📄 Export as Text</button>
+      <button class="export-btn" style="background:linear-gradient(135deg,var(--blue),var(--p2))" onclick="exportDiaryJSON()">📦 Save JSON Backup</button>
+      <button class="export-btn" style="background:linear-gradient(135deg,var(--green),var(--blue))" onclick="document.getElementById('importInput').click()">📤 Restore from Backup</button>
+      <input type="file" id="importInput" accept=".json" style="display:none" onchange="importDiary(event)" />
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ EDIT SHEET ══════════════ -->
+<div class="settings-overlay hidden" id="editOverlay" onclick="closeEdit()"></div>
+<div class="settings-sheet hidden" id="editSheet">
+  <div class="settings-handle"></div>
+  <div class="settings-title">Edit Entry ✏️</div>
+  <div class="mood-row" style="margin-bottom:14px">
+    <span class="mood-label">How were you feeling?</span>
+    <div class="mood-options" id="editMoodOptions">
+      <button class="mood-btn selected" data-mood="😊" onclick="selectEditMood(this)">😊</button>
+      <button class="mood-btn" data-mood="😢" onclick="selectEditMood(this)">😢</button>
+      <button class="mood-btn" data-mood="😠" onclick="selectEditMood(this)">😠</button>
+      <button class="mood-btn" data-mood="😴" onclick="selectEditMood(this)">😴</button>
+      <button class="mood-btn" data-mood="🤩" onclick="selectEditMood(this)">🤩</button>
+      <button class="mood-btn" data-mood="😌" onclick="selectEditMood(this)">😌</button>
+    </div>
+  </div>
+  <textarea id="editText" class="diary-textarea" rows="7" style="margin-bottom:12px"></textarea>
+  <div class="photo-section" style="margin-bottom:16px">
+    <div id="editPhotoPreview" class="photo-preview hidden"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <label class="photo-label" for="editPhotoInput" style="font-size:.85rem;padding:8px 14px">📷 Change photo</label>
+      <input type="file" id="editPhotoInput" accept="image/*" style="display:none" onchange="handleEditPhoto(event)" />
+      <button class="delete-btn" id="removePhotoBtn" style="flex:none;padding:8px 14px;font-size:.85rem;border-radius:12px" onclick="removeEditPhoto()">✕ Remove photo</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="delete-btn" style="flex:1;margin-top:0" onclick="closeEdit()">Cancel</button>
+    <button class="save-btn" style="flex:2" onclick="saveEdit()">Save Changes 💾</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+<script type="module" src="./main.js"></script>
+</body>
+</html>

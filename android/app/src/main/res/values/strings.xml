@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mali N Asha Diaries</string>
+    <string name="title_activity_main">Mali N Asha Diaries</string>
+    <string name="package_name">com.maliasha.diary</string>
+    <string name="custom_url_scheme">com.maliasha.diary</string>
+</resources>

@@ -1,0 +1,13 @@
+{
+  "appId": "com.maliasha.diary",
+  "appName": "Mali N Asha Diaries",
+  "webDir": "dist",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#ff6b9d",
+      "sound": null
+    },
+    "SpeechRecognition": {}
+  }
+}
