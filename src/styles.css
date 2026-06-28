@@ -172,6 +172,9 @@ html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--tex
                  border:2px dashed var(--p2); border-radius:14px; padding:12px 22px;
                  cursor:pointer; font-size:1rem; color:var(--p2); }
 #photoInput { display:none; }
+.remove-photo-btn { background:none; border:2px solid #ffccd5; border-radius:50px;
+                    padding:8px 14px; font-family:'Fredoka One',cursive; font-size:.85rem;
+                    color:#ff4757; cursor:pointer; }
 .photo-preview { margin-top:10px; }
 .photo-preview img { max-width:100%; border-radius:var(--radius); border:3px solid var(--p1); }
 
@@ -238,10 +241,14 @@ html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--tex
 .settings-sheet   { position:fixed; bottom:0; left:0; right:0; background:var(--card);
                      border-radius:28px 28px 0 0; padding:12px 24px 48px; z-index:301;
                      box-shadow:0 -8px 32px rgba(0,0,0,.25); max-height:90vh; overflow-y:auto; }
-.settings-handle  { width:40px; height:5px; background:var(--muted); border-radius:3px;
-                    margin:0 auto 18px; opacity:.4; }
-.settings-title   { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--p1);
-                    margin-bottom:4px; text-align:center; }
+.settings-handle    { width:40px; height:5px; background:var(--muted); border-radius:3px;
+                      margin:0 auto 12px; opacity:.4; }
+.settings-title-row { display:flex; align-items:center; justify-content:center;
+                      position:relative; margin-bottom:4px; }
+.settings-title     { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--p1); }
+.settings-close-btn { position:absolute; right:0; background:var(--mood-bg); border:none;
+                      border-radius:50%; width:32px; height:32px; font-size:1rem;
+                      color:var(--muted); cursor:pointer; line-height:1; }
 .settings-row     { display:flex; align-items:center; justify-content:space-between;
                     padding:14px 0; border-bottom:1px solid rgba(128,128,128,.15); }
 .settings-label   { font-size:1rem; color:var(--text); }
@@ -366,3 +373,162 @@ html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--tex
          border-radius:50px; font-size:.95rem; z-index:400; white-space:nowrap;
          box-shadow:0 4px 16px rgba(0,0,0,.2); }
 .hidden { display:none !important; }
+
+/* ── Profile button in header ── */
+.profile-hdr-btn { font-size:1.4rem; }
+
+/* ── Home quick links ── */
+.home-quick-row { display:flex; gap:12px; margin-bottom:20px; }
+.quick-card { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+              background:var(--card); border:none; border-radius:var(--radius);
+              padding:14px 8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.07);
+              transition:transform .15s; }
+.quick-card:active { transform:scale(.96); }
+.quick-card-icon  { font-size:1.8rem; }
+.quick-card-label { font-family:'Fredoka One',cursive; font-size:.8rem; color:var(--muted); }
+
+/* ── Mood chart ── */
+.mood-chart-wrap  { margin-bottom:16px; }
+.mood-chart-label { font-family:'Fredoka One',cursive; font-size:.75rem; color:var(--muted);
+                    letter-spacing:.6px; text-transform:uppercase; margin-bottom:6px; }
+.mood-chart       { display:flex; gap:3px; align-items:flex-end; overflow-x:auto; padding-bottom:2px; }
+.mood-bar-wrap    { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; min-width:20px; }
+.mood-bar-wrap.today .mood-bar-dot { outline:2px solid var(--p1); outline-offset:2px; }
+.mood-bar-dot  { width:22px; height:22px; border-radius:50%; display:flex; align-items:center;
+                 justify-content:center; font-size:.85rem; transition:transform .2s; }
+.mood-bar-day  { font-family:'Fredoka One',cursive; font-size:.6rem; color:var(--muted); }
+
+/* ── Tags ── */
+.tags-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+.tag-chip { background:var(--card2); border:1.5px solid var(--border); border-radius:50px;
+            padding:6px 12px; cursor:pointer; font-family:var(--font-main,'Caveat',cursive);
+            font-size:.85em; color:var(--muted); transition:background .15s, border-color .15s, color .15s; }
+.tag-chip.selected { background:var(--p1); border-color:var(--p1); color:#fff; }
+.tag-chip:active { transform:scale(.95); }
+.tag-filter-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
+.tag-filter-all { font-weight:bold; }
+.tag-badge { display:inline-block; background:var(--mood-bg); border-radius:50px;
+             padding:2px 8px; font-size:.7em; color:var(--p2); margin-right:4px;
+             font-family:'Fredoka One',cursive; }
+.entry-card-tags { margin-top:6px; }
+.detail-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; min-height:4px; }
+
+/* ── Mic row (speech + audio clip side by side) ── */
+.mic-row { display:flex; gap:12px; align-items:center; }
+.audio-rec-btn { display:flex; flex-direction:column; align-items:center; gap:4px;
+                 background:var(--card2); border:2px solid var(--border); border-radius:50px;
+                 padding:12px 18px; cursor:pointer; transition:transform .15s;
+                 font-family:'Fredoka One',cursive; font-size:.85rem; color:var(--muted); }
+.audio-rec-btn:active  { transform:scale(.94); }
+.audio-rec-btn.recording { background:linear-gradient(135deg,#ff4757,#ff6b9d); color:#fff; border-color:transparent; }
+.audio-rec-indicator { display:flex; align-items:center; gap:8px; color:#e74c3c;
+                       font-family:'Fredoka One',cursive; font-size:1rem; }
+.audio-preview { margin-top:6px; display:flex; flex-direction:column; gap:6px; }
+.detail-audio-wrap { margin-bottom:14px; background:var(--card2); border-radius:14px; padding:12px 14px; }
+.detail-audio-label { font-family:'Fredoka One',cursive; font-size:.85rem; color:var(--muted); margin-bottom:6px; }
+.detail-audio { width:100%; border-radius:8px; }
+
+/* ── Drawing / doodle ── */
+.doodle-section { margin-bottom:20px; }
+.doodle-wrap    { margin-top:8px; border-radius:var(--radius); overflow:hidden;
+                  border:2px dashed var(--blue); background:#fffbf5; }
+.doodle-toolbar { display:flex; align-items:center; gap:6px; padding:8px 10px;
+                  background:var(--card); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.doodle-tool-label { font-family:'Fredoka One',cursive; font-size:.75rem; color:var(--muted); }
+.doodle-colors  { display:flex; gap:5px; }
+.doodle-color-btn { width:22px; height:22px; border-radius:50%; border:2.5px solid transparent;
+                    cursor:pointer; transition:transform .15s; }
+.doodle-color-btn.active { border-color:var(--text); transform:scale(1.2); }
+.doodle-size-btn { background:var(--card2); border:1.5px solid var(--border); border-radius:8px;
+                   padding:3px 8px; cursor:pointer; font-family:'Fredoka One',cursive;
+                   font-size:.75rem; color:var(--muted); }
+.doodle-size-btn.active { border-color:var(--p1); color:var(--p1); }
+.doodle-canvas  { display:block; width:100%; touch-action:none; cursor:crosshair; }
+.drawing-img    { max-width:100%; border-radius:var(--radius); border:2px solid var(--blue); margin-bottom:12px; }
+.detail-drawing-wrap img { max-width:100%; border-radius:var(--radius); border:2px dashed var(--blue); margin-bottom:12px; }
+
+/* ── Entry card icons ── */
+.entry-card-icons { position:absolute; right:12px; top:12px; font-size:.85rem; display:flex; gap:2px; }
+
+/* ── Detail actions (wider) ── */
+.star-btn { flex:1; background:none; border:2px solid #ffe066; border-radius:50px;
+            padding:10px 6px; font-family:'Fredoka One',cursive; font-size:.85rem;
+            color:#c65e00; cursor:pointer; transition:background .2s; white-space:nowrap; }
+.star-btn.starred { background:#ffe066; border-color:#ffb347; }
+.star-btn:active  { background:#fff3cd; }
+
+/* ── Memories page ── */
+.memories-header { text-align:center; margin-bottom:20px; }
+.memories-title  { font-family:'Fredoka One',cursive; font-size:1.6rem; color:var(--p1); }
+.memories-sub    { font-size:.9rem; color:var(--muted); margin-top:4px; }
+
+/* ── Stats page ── */
+.stats-hero         { text-align:center; padding:20px 0 16px; }
+.stats-hero-name    { font-family:'Fredoka One',cursive; font-size:1.8rem; color:var(--p1); }
+.stats-hero-sub     { font-size:1rem; color:var(--muted); margin-top:4px; }
+.stats-grid         { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px; }
+.stat-box           { background:var(--card); border-radius:var(--radius); padding:14px 10px;
+                      text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.stat-num           { font-family:'Fredoka One',cursive; font-size:1.6rem; color:var(--p1); }
+.stat-label         { font-size:.7rem; color:var(--muted); margin-top:2px; font-family:'Fredoka One',cursive; line-height:1.2; }
+.stats-section-title { font-family:'Fredoka One',cursive; font-size:.85rem; color:var(--muted);
+                       letter-spacing:.8px; text-transform:uppercase; margin-bottom:12px; }
+.mood-breakdown     { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.mood-stat-item     { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.mood-stat-emoji    { font-size:1.8rem; }
+.mood-stat-count    { font-family:'Fredoka One',cursive; font-size:.9rem; color:var(--p2); }
+.month-bars         { display:flex; gap:4px; align-items:flex-end; height:90px; }
+.month-bar-wrap     { display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; }
+.month-bar          { width:100%; border-radius:4px 4px 0 0; transition:height .4s ease; min-height:4px; }
+.month-bar-num      { font-family:'Fredoka One',cursive; font-size:.6rem; color:var(--muted); min-height:10px; }
+.month-bar-label    { font-family:'Fredoka One',cursive; font-size:.6rem; color:var(--muted); }
+
+/* ── Profile picker ── */
+.profile-picker      { position:fixed; bottom:0; left:0; right:0; background:var(--card);
+                       border-radius:28px 28px 0 0; padding:12px 24px 56px; z-index:301;
+                       box-shadow:0 -8px 32px rgba(0,0,0,.25); }
+.profile-picker-title { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--p1);
+                        text-align:center; margin-bottom:20px; }
+.profile-cards       { display:flex; gap:20px; justify-content:center; }
+.profile-card        { display:flex; flex-direction:column; align-items:center; gap:10px;
+                       background:var(--card2); border:3px solid var(--border); border-radius:24px;
+                       padding:24px 32px; cursor:pointer; transition:transform .15s, border-color .2s;
+                       flex:1; max-width:140px; }
+.profile-card:active  { transform:scale(.96); }
+.profile-card.active  { border-color:var(--p1); background:linear-gradient(135deg,#fff0fa,#ede7ff); }
+.profile-card-emoji   { font-size:3rem; }
+.profile-card-name    { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--text); }
+
+/* ── PIN overlay ── */
+.pin-overlay  { position:fixed; inset:0; background:rgba(10,5,20,.88); z-index:500;
+                display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+.pin-box      { background:var(--card); border-radius:28px; padding:32px 28px 24px; width:min(340px,92vw);
+                box-shadow:0 8px 40px rgba(0,0,0,.4); text-align:center; }
+.pin-emoji    { font-size:3rem; margin-bottom:8px; }
+.pin-title    { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--p1); margin-bottom:20px; }
+.pin-dots     { display:flex; gap:14px; justify-content:center; margin-bottom:12px; }
+.pin-dot      { width:18px; height:18px; border-radius:50%; border:2.5px solid var(--p2);
+                background:transparent; transition:background .15s; }
+.pin-dot.filled { background:var(--p1); border-color:var(--p1); }
+.pin-error    { font-family:'Fredoka One',cursive; font-size:.9rem; color:#ff4757; margin-bottom:8px; }
+.pin-keypad   { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0 12px; }
+.pin-key      { background:var(--card2); border:2px solid var(--border); border-radius:16px;
+                padding:16px; font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--text);
+                cursor:pointer; transition:background .1s, transform .1s; }
+.pin-key:active { transform:scale(.9); background:var(--mood-bg); }
+.pin-key-clear, .pin-key-back { font-size:1rem; color:var(--muted); }
+.pin-cancel-btn { background:none; border:none; font-family:'Fredoka One',cursive; font-size:.9rem;
+                  color:var(--muted); cursor:pointer; padding:8px; }
+
+/* ── PIN in settings ── */
+.pin-manage-btn { background:var(--mood-bg); border:1.5px solid var(--border); border-radius:50px;
+                  padding:7px 14px; font-family:'Fredoka One',cursive; font-size:.85rem;
+                  color:var(--p2); cursor:pointer; }
+.pin-remove-btn { border-color:#ffccd5; color:#ff4757; }
+
+/* ── Dark mode additions ── */
+[data-theme="dark"] .quick-card    { background:var(--card); }
+[data-theme="dark"] .stat-box      { background:var(--card); }
+[data-theme="dark"] .profile-card  { background:var(--card2); }
+[data-theme="dark"] .pin-box       { background:var(--card); }
+[data-theme="dark"] .pin-key       { background:var(--card2); }

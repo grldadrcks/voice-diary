@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Mali&amp;Asha Diary" />
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Fredoka+One&family=Patrick+Hand&family=Indie+Flower&family=Shadows+Into+Light&family=Architects+Daughter&family=Schoolbell&family=Gochi+Hand&display=swap" rel="stylesheet" />
@@ -19,6 +20,7 @@
 <!-- ── Header ── -->
 <header class="app-header">
   <button class="hdr-btn hidden" id="backBtn" onclick="goBack()">←</button>
+  <button class="hdr-btn profile-hdr-btn hidden" id="profileBtn" onclick="openProfilePicker()"></button>
   <h1 class="app-title" id="pageTitle">Mali&amp;Asha Diary ✨</h1>
   <button class="hdr-btn" id="settingsBtn" onclick="openSettings()">⚙️</button>
 </header>
@@ -31,6 +33,12 @@
   </div>
   <div id="streakZero" class="streak-zero hidden"></div>
 
+  <!-- Mood chart -->
+  <div class="mood-chart-wrap" id="moodChartWrap">
+    <div class="mood-chart-label">Last 14 days</div>
+    <div class="mood-chart" id="moodChart"></div>
+  </div>
+
   <div class="today-card" onclick="showPage('new-entry')">
     <div class="today-card-icon">🎙️</div>
     <div>
@@ -38,6 +46,18 @@
       <div class="today-card-sub">Tap to speak your thoughts!</div>
     </div>
     <div class="today-card-arrow">›</div>
+  </div>
+
+  <!-- Quick links row -->
+  <div class="home-quick-row">
+    <button class="quick-card" onclick="showPage('memories')">
+      <span class="quick-card-icon">⭐</span>
+      <span class="quick-card-label">Memory Jar</span>
+    </button>
+    <button class="quick-card" onclick="showPage('stats')">
+      <span class="quick-card-icon">📊</span>
+      <span class="quick-card-label">My Stats</span>
+    </button>
   </div>
 
   <h2 class="section-heading">Recent Days 🌈</h2>
@@ -60,16 +80,30 @@
     </div>
   </div>
 
+  <!-- Tags -->
+  <div class="tags-row" id="newEntryTagsRow"></div>
+
   <div class="voice-area">
     <textarea id="entryText" class="diary-textarea"
       placeholder="Tap the mic and start talking... or type here! 🖊️" rows="7"></textarea>
-    <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
-      <span class="mic-icon">🎙️</span>
-      <span class="mic-label" id="micLabel">Tap to Speak</span>
-    </button>
+    <div class="mic-row">
+      <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
+        <span class="mic-icon">🎙️</span>
+        <span class="mic-label" id="micLabel">Tap to Speak</span>
+      </button>
+      <button class="audio-rec-btn" id="audioRecBtn" onclick="toggleAudioRecording()" title="Record a voice clip">
+        <span id="audioRecIcon">🔴</span>
+        <span class="mic-label" id="audioRecLabel">Clip</span>
+      </button>
+    </div>
     <div class="recording-indicator hidden" id="recordingIndicator">
       <span class="pulse-dot"></span> Listening...
     </div>
+    <div class="audio-rec-indicator hidden" id="audioRecIndicator">
+      <span class="pulse-dot" style="background:#e74c3c"></span>
+      <span id="audioRecTimer">Recording 0s</span>
+    </div>
+    <div id="newAudioPreview" class="audio-preview hidden"></div>
   </div>
 
   <!-- Writing prompts -->
@@ -81,10 +115,33 @@
     <div class="prompts-chips" id="promptsChips"></div>
   </div>
 
+  <!-- Photo -->
   <div class="photo-section">
-    <label class="photo-label" for="photoInput">📷 Add a photo</label>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label class="photo-label" for="photoInput">📷 Add a photo</label>
+      <button class="remove-photo-btn hidden" id="removeNewPhotoBtn" onclick="removeNewPhoto()">✕ Remove photo</button>
+    </div>
     <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)" />
     <div id="photoPreview" class="photo-preview hidden"></div>
+  </div>
+
+  <!-- Doodle -->
+  <div class="doodle-section">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <button class="photo-label" id="doodleToggleBtn" onclick="toggleDoodle()" style="background:linear-gradient(135deg,#e8f5ff,#ede7ff);border-color:var(--blue)">✏️ Draw something</button>
+      <button class="remove-photo-btn hidden" id="clearDoodleBtn" onclick="clearDoodle()">✕ Clear</button>
+    </div>
+    <div class="doodle-wrap hidden" id="doodleWrap">
+      <div class="doodle-toolbar">
+        <span class="doodle-tool-label">Colour:</span>
+        <div class="doodle-colors" id="doodleColors"></div>
+        <span class="doodle-tool-label" style="margin-left:12px">Size:</span>
+        <button class="doodle-size-btn active" data-size="4" onclick="setDoodleSize(this)">S</button>
+        <button class="doodle-size-btn" data-size="10" onclick="setDoodleSize(this)">M</button>
+        <button class="doodle-size-btn" data-size="20" onclick="setDoodleSize(this)">L</button>
+      </div>
+      <canvas id="doodleCanvas" class="doodle-canvas"></canvas>
+    </div>
   </div>
 
   <button class="save-btn" onclick="saveEntry()">Save Entry 💾</button>
@@ -94,13 +151,37 @@
 <section class="page" id="page-entry-detail">
   <div class="detail-mood" id="detailMood"></div>
   <div class="detail-date" id="detailDate"></div>
+  <div class="detail-tags" id="detailTags"></div>
   <div class="detail-text" id="detailText"></div>
   <div class="detail-photo-wrap" id="detailPhoto"></div>
-  <div class="detail-actions">
-    <button class="tts-btn" id="ttsBtn" onclick="toggleReadAloud()">🔊 Read Aloud</button>
-    <button class="edit-entry-btn" onclick="openEdit()">✏️ Edit</button>
-    <button class="delete-btn" id="deleteBtn" onclick="deleteCurrentEntry()">🗑️ Delete</button>
+  <div class="detail-drawing-wrap" id="detailDrawing"></div>
+  <div id="detailAudioWrap" class="detail-audio-wrap hidden">
+    <div class="detail-audio-label">🎤 Voice clip</div>
+    <audio id="detailAudio" controls class="detail-audio"></audio>
   </div>
+  <div class="detail-actions">
+    <button class="star-btn" id="starBtn" onclick="toggleFavorite()">☆ Star</button>
+    <button class="tts-btn" id="ttsBtn" onclick="toggleReadAloud()">🔊 Read</button>
+    <button class="edit-entry-btn" onclick="openEdit()">✏️ Edit</button>
+    <button class="delete-btn" id="deleteBtn" onclick="deleteCurrentEntry()">🗑️</button>
+  </div>
+</section>
+
+<!-- ══════════════ MEMORIES ══════════════ -->
+<section class="page" id="page-memories">
+  <div class="memories-header">
+    <div class="memories-title">⭐ Memory Jar</div>
+    <div class="memories-sub">Your favourite entries</div>
+  </div>
+  <div id="memoriesList" class="entries-list"></div>
+</section>
+
+<!-- ══════════════ STATS ══════════════ -->
+<section class="page" id="page-stats">
+  <div class="stats-hero" id="statsHero"></div>
+  <div class="stats-grid" id="statsGrid"></div>
+  <div class="stats-moods" id="statsMoods"></div>
+  <div class="stats-months" id="statsMonths"></div>
 </section>
 
 <!-- ══════════════ CALENDAR ══════════════ -->
@@ -120,6 +201,7 @@
     <input type="text" id="searchInput" class="search-input"
            placeholder="🔍 Search your diary..." oninput="doSearch()" />
   </div>
+  <div class="tag-filter-row" id="tagFilterRow"></div>
   <div id="searchResults" class="entries-list"></div>
 </section>
 
@@ -150,13 +232,13 @@
     <span>🏠</span><span>Home</span>
   </button>
   <button class="nav-btn" id="nav-calendar"  onclick="showPage('calendar')">
-    <span>📅</span><span>Calendar</span>
+    <span>📅</span><span>Cal</span>
   </button>
   <button class="nav-btn" id="nav-new-entry" onclick="showPage('new-entry')">
     <span class="nav-plus">＋</span><span>New</span>
   </button>
-  <button class="nav-btn" id="nav-search"    onclick="showPage('search')">
-    <span>🔍</span><span>Search</span>
+  <button class="nav-btn" id="nav-memories"  onclick="showPage('memories')">
+    <span>⭐</span><span>Stars</span>
   </button>
   <button class="nav-btn" id="nav-todo"      onclick="showPage('todo')">
     <span>✅</span><span>Tasks</span>
@@ -167,7 +249,10 @@
 <div class="settings-overlay hidden" id="settingsOverlay" onclick="closeSettings()"></div>
 <div class="settings-sheet hidden" id="settingsSheet">
   <div class="settings-handle"></div>
-  <div class="settings-title">Settings 🎨</div>
+  <div class="settings-title-row">
+    <div class="settings-title">Settings 🎨</div>
+    <button class="settings-close-btn" onclick="closeSettings()">✕</button>
+  </div>
 
   <div class="settings-row">
     <span class="settings-label">🌙 Dark Mode</span>
@@ -216,6 +301,18 @@
       <option value="nl-NL">Nederlands</option>
       <option value="ru-RU">Русский</option>
     </select>
+  </div>
+
+  <!-- PIN Lock -->
+  <div class="settings-section">
+    <div class="settings-section-title">🔒 Diary Lock</div>
+    <div class="settings-row" style="border:none;padding-top:0">
+      <span class="settings-label" style="font-size:.9rem" id="pinStatusLabel">No PIN set</span>
+      <div style="display:flex;gap:8px">
+        <button class="pin-manage-btn" id="setPinBtn" onclick="startSetPin()">Set PIN</button>
+        <button class="pin-manage-btn pin-remove-btn hidden" id="removePinBtn" onclick="removePin()">Remove</button>
+      </div>
+    </div>
   </div>
 
   <div class="settings-section">
@@ -304,7 +401,7 @@
 <div class="settings-sheet hidden" id="editSheet">
   <div class="settings-handle"></div>
   <div class="settings-title">Edit Entry ✏️</div>
-  <div class="mood-row" style="margin-bottom:14px">
+  <div class="mood-row" style="margin-bottom:10px">
     <span class="mood-label">How were you feeling?</span>
     <div class="mood-options" id="editMoodOptions">
       <button class="mood-btn selected" data-mood="😊" onclick="selectEditMood(this)">😊</button>
@@ -315,6 +412,7 @@
       <button class="mood-btn" data-mood="😌" onclick="selectEditMood(this)">😌</button>
     </div>
   </div>
+  <div class="tags-row" id="editEntryTagsRow" style="margin-bottom:12px"></div>
   <textarea id="editText" class="diary-textarea" rows="7" style="margin-bottom:12px"></textarea>
   <div class="photo-section" style="margin-bottom:16px">
     <div id="editPhotoPreview" class="photo-preview hidden"></div>
@@ -327,6 +425,53 @@
   <div style="display:flex;gap:10px">
     <button class="delete-btn" style="flex:1;margin-top:0" onclick="closeEdit()">Cancel</button>
     <button class="save-btn" style="flex:2" onclick="saveEdit()">Save Changes 💾</button>
+  </div>
+</div>
+
+<!-- ══════════════ PROFILE PICKER ══════════════ -->
+<div class="settings-overlay hidden" id="profileOverlay" onclick="closeProfilePicker()"></div>
+<div class="profile-picker hidden" id="profilePicker">
+  <div class="settings-handle"></div>
+  <div class="profile-picker-title">Whose diary? 📖</div>
+  <div class="profile-cards">
+    <button class="profile-card" id="profileCardMali" onclick="selectProfile('mali')">
+      <div class="profile-card-emoji">🐣</div>
+      <div class="profile-card-name">Mali</div>
+    </button>
+    <button class="profile-card" id="profileCardAsha" onclick="selectProfile('asha')">
+      <div class="profile-card-emoji">🌸</div>
+      <div class="profile-card-name">Asha</div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════ PIN OVERLAY ══════════════ -->
+<div class="pin-overlay hidden" id="pinOverlay">
+  <div class="pin-box">
+    <div class="pin-emoji" id="pinEmoji">🔒</div>
+    <div class="pin-title" id="pinTitle">Enter your PIN</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-error hidden" id="pinError">Wrong PIN, try again!</div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinDigit('1')">1</button>
+      <button class="pin-key" onclick="pinDigit('2')">2</button>
+      <button class="pin-key" onclick="pinDigit('3')">3</button>
+      <button class="pin-key" onclick="pinDigit('4')">4</button>
+      <button class="pin-key" onclick="pinDigit('5')">5</button>
+      <button class="pin-key" onclick="pinDigit('6')">6</button>
+      <button class="pin-key" onclick="pinDigit('7')">7</button>
+      <button class="pin-key" onclick="pinDigit('8')">8</button>
+      <button class="pin-key" onclick="pinDigit('9')">9</button>
+      <button class="pin-key pin-key-clear" onclick="pinClear()">✕</button>
+      <button class="pin-key" onclick="pinDigit('0')">0</button>
+      <button class="pin-key pin-key-back" onclick="pinBackspace()">⌫</button>
+    </div>
+    <button class="pin-cancel-btn" id="pinCancelBtn" onclick="closePinOverlay()">Cancel</button>
   </div>
 </div>
 
